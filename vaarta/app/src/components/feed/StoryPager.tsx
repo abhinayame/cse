@@ -15,6 +15,7 @@ import { usePrefs } from '@/store/prefs';
 import { speech } from '@/lib/speech';
 import { storyText } from '@/lib/text';
 import { shareStoryImage } from '@/lib/share';
+import { logEvent } from '@/lib/api';
 import { useSpeaking } from '@/hooks/useSpeaking';
 import type { Story } from '@/data/types';
 
@@ -39,7 +40,13 @@ export const StoryPager = forwardRef<FlipFeedHandle, Props>(function StoryPager(
 
   const onIndex = useCallback((i: number, prev: number) => {
     const p = items[prev];
-    if (p?.type === 'story') recordRead(p.story, Date.now() - enteredAt.current);
+    if (p?.type === 'story') {
+      const dwellMs = Date.now() - enteredAt.current;
+      recordRead(p.story, dwellMs);
+      logEvent({ storyId: p.story.id, districtId: p.story.districtId, action: dwellMs < 2500 ? 'skip' : 'flip', dwellMs });
+    }
+    const n = items[i];
+    if (n?.type === 'story') logEvent({ storyId: n.story.id, districtId: n.story.districtId, action: 'view' });
     enteredAt.current = Date.now();
     if (speech.current && p?.type === 'story' && speech.current === p.story.id) speech.stop();
     onIndexChange?.(i);
@@ -54,6 +61,7 @@ export const StoryPager = forwardRef<FlipFeedHandle, Props>(function StoryPager(
   const onShare = useCallback((s: Story) => {
     setShareStory(s);
     recordShare(s);
+    logEvent({ storyId: s.id, districtId: s.districtId, action: 'share' });
     // wait for the off-screen template + its image to render before capturing
     setTimeout(async () => { await shareStoryImage(shareRef.current, s, lang); setShareStory(null); }, 450);
   }, [lang, recordShare]);

@@ -129,3 +129,22 @@ export async function submitCitizenReport(s: NewSubmission): Promise<{ id: strin
   await delay(900);
   return { id: `sub-${Date.now()}` };
 }
+
+// ── Engagement events (batched; feed analytics + server-side personalisation) ──
+type EngagementEvent = { storyId: string; districtId: string; action: 'view' | 'flip' | 'skip' | 'share' | 'listen' | 'bookmark'; dwellMs?: number };
+let pending: EngagementEvent[] = [];
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+export function logEvent(e: EngagementEvent) {
+  if (!supabase) return;
+  pending.push(e);
+  if (pending.length >= 20) flushEvents();
+  else if (!timer) timer = setTimeout(flushEvents, 15_000);
+}
+
+export function flushEvents() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  if (!supabase || !pending.length) return;
+  const batch = pending; pending = [];
+  supabase.rpc('log_events', { p_events: batch }).then(({ error }) => { if (error) pending.unshift(...batch.slice(0, 100)); });
+}
