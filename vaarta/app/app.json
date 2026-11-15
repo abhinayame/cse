@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Vaarta",
+    "slug": "vaarta",
+    "scheme": "vaarta",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0B1220",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "in.vaarta.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Vaarta uses your location to show news from your district and mandal.",
+        "NSPhotoLibraryUsageDescription": "Attach photos and videos to your Citizen Reporter submissions.",
+        "NSCameraUsageDescription": "Capture photos and videos for Citizen Reporter submissions."
+      }
+    },
+    "android": {
+      "package": "in.vaarta.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B1220",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "VIBRATE"],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro", "output": "single" },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-image",
+      "expo-sharing",
+      "expo-video",
+      "expo-localization",
+      ["expo-splash-screen", { "backgroundColor": "#0B1220", "image": "./assets/splash-icon.png", "imageWidth": 120 }],
+      ["expo-location", { "locationWhenInUsePermission": "Vaarta uses your location to show news from your district and mandal." }],
+      ["expo-notifications", { "color": "#C9A24D" }],
+      "expo-image-picker"
+    ],
+    "experiments": { "typedRoutes": false },
+    "extra": {
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
+    }
+  }
+}
