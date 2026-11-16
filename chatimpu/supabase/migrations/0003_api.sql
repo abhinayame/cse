@@ -12,6 +12,7 @@ begin
   insert into profiles (id, phone) values (new.id, new.phone) on conflict do nothing;
   return new;
 end $$;
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created after insert on auth.users for each row execute function handle_new_user();
 
 -- Story → JSON in the exact shape of app/src/data/types.ts `Story`

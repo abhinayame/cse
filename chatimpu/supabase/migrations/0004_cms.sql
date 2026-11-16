@@ -1,4 +1,4 @@
--- CMS support: staff-facing view, missing write policies, app settings ──────────
+-- CMS support (safe to re-run): staff-facing view, missing write policies, app settings ──────────
 
 -- Without an image CDN configured, return the storage path unchanged. Clients turn a
 -- bare path into `${SUPABASE_URL}/storage/v1/object/public/media/<path>` (the old
@@ -26,21 +26,29 @@ create or replace view cms_stories with (security_invoker = true) as
   from stories s left join profiles p on p.id = s.author_id;
 
 -- Moderator districts had RLS enabled but no policies, so nobody could read or assign them.
+drop policy if exists staff_read on moderator_districts;
 create policy staff_read on moderator_districts for select using (is_staff());
+drop policy if exists admin_write on moderator_districts;
 create policy admin_write on moderator_districts for all using (my_role() = 'super_admin') with check (my_role() = 'super_admin');
 
 -- Poll children were read-only; editors create polls from the CMS.
+drop policy if exists staff_write on poll_questions;
 create policy staff_write on poll_questions for all using (my_role() in ('super_admin','editor')) with check (my_role() in ('super_admin','editor'));
+drop policy if exists staff_write on poll_options;
 create policy staff_write on poll_options for all using (my_role() in ('super_admin','editor')) with check (my_role() in ('super_admin','editor'));
+drop policy if exists staff_write on poll_option_labels;
 create policy staff_write on poll_option_labels for all using (my_role() in ('super_admin','editor')) with check (my_role() in ('super_admin','editor'));
 
 -- Advertisers: staff can read names for the ad list (writes stay super_admin only).
+drop policy if exists staff_read on advertisers;
 create policy staff_read on advertisers for select using (is_staff());
 
 -- Small key/value settings read by the app (e.g. how often native ads appear).
 create table if not exists app_settings (key text primary key, value jsonb not null, updated_at timestamptz not null default now());
 alter table app_settings enable row level security;
+drop policy if exists read_all on app_settings;
 create policy read_all on app_settings for select using (true);
+drop policy if exists admin_write on app_settings;
 create policy admin_write on app_settings for all using (my_role() = 'super_admin') with check (my_role() = 'super_admin');
 insert into app_settings (key, value) values ('ad_frequency', '8') on conflict do nothing;
 
