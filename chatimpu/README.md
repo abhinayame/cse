@@ -79,6 +79,8 @@ AI buttons use a clearly-labelled offline fallback until the backend is connecte
 
 ## Connecting the backend (Supabase)
 
+**Step-by-step guide (dashboard clicks, SMS/OTP for India, roles, push, rebuild): [docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).** Summary for developers:
+
 ```bash
 npm i -g supabase
 cd chatimpu
