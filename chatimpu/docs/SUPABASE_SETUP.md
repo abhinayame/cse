@@ -36,12 +36,21 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
 4. `chatimpu/supabase/migrations/0004_cms.sql` — what the newsroom CMS needs (staff views, settings, poll fixes)
 5. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
 
-> Already ran 0001–0003 earlier? Just run `0004_cms.sql` now.
+> **Run each file in its own query, and only once.** Click **+ New query** for every file — don't paste
+> several files into one query, and don't press Run twice. A file that has already run fails the second time
+> with an error like `type "role_kind" already exists`. That error is harmless (nothing is changed when a
+> query fails), it just means that file is already done.
+>
+> **Not sure what's done?** Run `chatimpu/supabase/check_setup.sql` — it lists each file as ✅ done or ❌ not
+> yet, and changes nothing. Then run only the ❌ files, in order.
+>
+> **Want a clean start?** On a new project only, run `chatimpu/supabase/reset.sql` (it deletes every Chatimpu
+> table and the sample data), then run the five files again from the top.
 
 Check it worked: **Table Editor → stories** should show 24 rows. Then in SQL Editor run:
 
 ```sql
-select jsonb_array_length(get_feed('te', 'hyd', 'hyd-amp'));   -- expect a number > 0
+select jsonb_array_length(get_feed('te', 'hyd', 'hyd-amp'));   -- expect a number > 0 (0 means seed.sql hasn't run yet)
 ```
 
 > Prefer the command line? Instead of step 3: `npm i -g supabase`, then from `chatimpu/`:
