@@ -25,10 +25,21 @@
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "VIBRATE"],
-      "predictiveBackGestureEnabled": false
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "VIBRATE"
+      ],
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": [
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
     },
-    "web": { "favicon": "./assets/favicon.png", "bundler": "metro", "output": "single" },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
     "plugins": [
       "expo-router",
       "expo-font",
@@ -36,12 +47,31 @@
       "expo-sharing",
       "expo-video",
       "expo-localization",
-      ["expo-splash-screen", { "backgroundColor": "#0A0A0A", "image": "./assets/splash-icon.png", "imageWidth": 120 }],
-      ["expo-location", { "locationWhenInUsePermission": "Chatimpu uses your location to show news from your district and mandal." }],
-      ["expo-notifications", { "color": "#D7141A" }],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0A0A0A",
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Chatimpu uses your location to show news from your district and mandal."
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#D7141A"
+        }
+      ],
       "expo-image-picker"
     ],
-    "experiments": { "typedRoutes": false },
+    "experiments": {
+      "typedRoutes": false
+    },
     "extra": {
       "supabaseUrl": "",
       "supabaseAnonKey": ""
