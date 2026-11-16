@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "Chatimpu",
+    "slug": "chatimpu",
+    "scheme": "chatimpu",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#0A0A0A",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "in.chatimpu.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Chatimpu uses your location to show news from your district and mandal.",
+        "NSPhotoLibraryUsageDescription": "Attach photos and videos to your Citizen Reporter submissions.",
+        "NSCameraUsageDescription": "Capture photos and videos for Citizen Reporter submissions."
+      }
+    },
+    "android": {
+      "package": "in.chatimpu.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0A0A0A",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": ["ACCESS_COARSE_LOCATION", "ACCESS_FINE_LOCATION", "VIBRATE"],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": { "favicon": "./assets/favicon.png", "bundler": "metro", "output": "single" },
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      "expo-image",
+      "expo-sharing",
+      "expo-video",
+      "expo-localization",
+      ["expo-splash-screen", { "backgroundColor": "#0A0A0A", "image": "./assets/splash-icon.png", "imageWidth": 120 }],
+      ["expo-location", { "locationWhenInUsePermission": "Chatimpu uses your location to show news from your district and mandal." }],
+      ["expo-notifications", { "color": "#D7141A" }],
+      "expo-image-picker"
+    ],
+    "experiments": { "typedRoutes": false },
+    "extra": {
+      "supabaseUrl": "",
+      "supabaseAnonKey": ""
+    }
+  }
+}
