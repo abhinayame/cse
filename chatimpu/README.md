@@ -73,7 +73,7 @@ Demo login: any 10-digit number, OTP **123456** (makes you a verified Citizen Re
 cd admin && npm install && npm run dev      # http://localhost:5173
 ```
 
-In demo mode the CMS sidebar has a **"sign in as"** switch for Super Admin / Editor /
+Without Supabase keys the CMS runs in demo mode: the sidebar has a **"sign in as"** switch for Super Admin / Editor /
 District Moderator (Warangal) / Reporter (Visakhapatnam), so you can see each role's scope.
 AI buttons use a clearly-labelled offline fallback until the backend is connected.
 
@@ -87,7 +87,7 @@ cd chatimpu
 supabase init                                 # once; keeps ./supabase as-is
 supabase start                                # local stack (Docker) — or link a cloud project:
 # supabase link --project-ref <ref>
-supabase db reset                             # applies migrations/*.sql and seed.sql
+supabase db reset                             # applies migrations/0001–0004 and seed.sql
 supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
 supabase functions deploy ai-assist send-push
 ```
@@ -150,8 +150,8 @@ CTR, revenue) · Polls · Users & roles.
 - Tamil, Kannada, Malayalam, Marathi, Bengali and Gujarati UI strings should be reviewed by native
   editors before launch; untranslated keys fall back to English.
 - Payments for Premium (Play Billing / StoreKit, e.g. via RevenueCat) are stubbed in `app/premium.tsx`.
-- In demo mode the CMS keeps edits in memory; with Supabase configured, wire `lib/store.tsx`
-  mutations to the endpoints in `docs/API.md`.
+- Without Supabase keys the CMS runs in demo mode (in-memory edits, role switcher). With keys it requires a
+  staff sign-in (phone OTP or email) and reads/writes Supabase; image upload uses the `media` storage bucket.
 
 ## Checks
 

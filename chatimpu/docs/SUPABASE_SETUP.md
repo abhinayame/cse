@@ -27,13 +27,16 @@ Also note the **project ref** — the `xxxx` part of the URL.
 
 ## 3. Create the database (dashboard → SQL Editor)
 
-Open **SQL Editor → New query**. Run these four files **in this order**: open each file from the
+Open **SQL Editor → New query**. Run these five files **in this order**: open each file from the
 repo, paste the whole contents, click **Run**, wait for "Success", then do the next.
 
 1. `chatimpu/supabase/migrations/0001_schema.sql` — tables (turns on PostGIS and pg_trgm)
 2. `chatimpu/supabase/migrations/0002_rls.sql` — security rules + the `media` storage bucket
 3. `chatimpu/supabase/migrations/0003_api.sql` — feed, polls, voting, moderation, analytics
-4. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
+4. `chatimpu/supabase/migrations/0004_cms.sql` — what the newsroom CMS needs (staff views, settings, poll fixes)
+5. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
+
+> Already ran 0001–0003 earlier? Just run `0004_cms.sql` now.
 
 Check it worked: **Table Editor → stories** should show 24 rows. Then in SQL Editor run:
 
@@ -57,15 +60,26 @@ select jsonb_array_length(get_feed('te', 'hyd', 'hyd-amp'));   -- expect a numbe
    `{#var#} is your Chatimpu login code.` and give the IDs to your SMS provider.
 5. **Authentication → Rate limits:** keep the SMS limit low (e.g. 30/hour) to avoid SMS-bombing bills.
 
-## 5. Make yourself Super Admin (app + SQL Editor)
+## 5. Make yourself Super Admin (dashboard + SQL Editor)
 
-1. Sign in once in the app with your phone number (step 9 below), so your profile row is created.
+The CMS never creates accounts by itself: a staff member's account must exist first.
+
+1. Create your account, either way:
+   - **Phone:** sign in once in the app (step 9), **or** in **Authentication → Users → Add user → Create new user**
+     enter your phone number (tick *Auto confirm*).
+   - **Email:** **Authentication → Users → Add user → Create new user** with email + password (tick *Auto confirm user*).
 2. SQL Editor:
 
 ```sql
 -- phone is stored without the '+', e.g. 919876543210
-update profiles set role = 'super_admin', verified_reporter = true where phone = '91XXXXXXXXXX';
+update profiles set role = 'super_admin', verified_reporter = true, display_name = 'Your Name' where phone = '91XXXXXXXXXX';
+
+-- or, for an email account:
+update profiles set role = 'super_admin', display_name = 'Your Name'
+where id = (select id from auth.users where email = 'you@example.com');
 ```
+
+After this first Super Admin, give everyone else their role from the CMS (**Users & roles**) — no SQL needed.
 
 Other roles the same way: `'editor'`, `'district_moderator'`, `'reporter'`. A moderator also needs districts:
 
@@ -159,21 +173,36 @@ The demo OTP `123456` stops working once keys are set — use a test number from
 
 ## 11. CMS (newsroom dashboard)
 
-Create `chatimpu/admin/.env`:
+1. Create `chatimpu/admin/.env`:
 
 ```
 VITE_SUPABASE_URL=https://<ref>.supabase.co
 VITE_SUPABASE_ANON_KEY=<anon / publishable key>
 ```
 
-> **Current limit:** the CMS still works on in-memory demo data and has no staff sign-in screen yet,
-> so with keys set it will not save to the database, and the AI buttons need a signed-in staff user.
-> Until that is wired up, newsroom changes can be made in **Table Editor**
-> (`stories`, `story_translations`, `citizen_reports`, `local_alerts`, `ads`, `polls`).
+2. Run it: `cd chatimpu/admin && npm install && npm run dev` (or `npm run build` and host the `dist/` folder
+   on Vercel / Netlify / Cloudflare Pages — set the same two variables there).
+3. **Authentication → URL Configuration:** set **Site URL** to the CMS address (needed for password-reset emails).
+4. Open the CMS and sign in with **Phone OTP** or **Email**. You land on the dashboard with a green
+   **Live data** badge in the sidebar.
+
+What each role sees (enforced by the database, not just the menu):
+
+| Role | Can |
+|---|---|
+| Super Admin | everything, incl. Ad manager, Users & roles, ad frequency |
+| Editor | stories in all districts, moderation, analytics, polls |
+| District Moderator | stories, moderation and analytics for their districts only |
+| Reporter | write drafts; an editor or moderator publishes them |
+| Reader (app user) | no CMS access — sees "No newsroom access" |
+
+New staff: they create their account (step 5.1), then a Super Admin picks their role and districts in
+**Users & roles**. Unknown phone numbers can't sign up through the CMS.
+
+Without the `.env` file the CMS runs in **demo mode** on sample data, with a role switcher in the sidebar.
 
 ## 12. Before going live — checklist
 
-- [ ] **Authentication → URL Configuration:** set the Site URL to your CMS address.
 - [ ] Never ship or commit the **service_role** key. Only the anon key goes in apps.
 - [ ] **Advisors → Security Advisor:** fix anything it reports.
 - [ ] **Database → Backups:** confirm daily backups (Pro plan has point-in-time recovery).

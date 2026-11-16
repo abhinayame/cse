@@ -5,12 +5,12 @@ export type FeedItem =
   | { type: 'ad'; key: string; ad: Ad }
   | { type: 'end'; key: string };
 
-/** Interleave a native full-screen ad every 8–10 stories (deterministic per position). */
-export function withAds(stories: Story[], ads: Ad[], premium: boolean): FeedItem[] {
+/** Interleave a native full-screen ad every `every`…`every+2` stories (8–10 by default). */
+export function withAds(stories: Story[], ads: Ad[], premium: boolean, every = 8): FeedItem[] {
   const out: FeedItem[] = [];
   let sinceAd = 0;
   let adIdx = 0;
-  let gap = 8;
+  let gap = every;
   for (const s of stories) {
     out.push({ type: 'story', key: s.id, story: s });
     sinceAd++;
@@ -19,7 +19,7 @@ export function withAds(stories: Story[], ads: Ad[], premium: boolean): FeedItem
       out.push({ type: 'ad', key: `ad-${ad.id}-${adIdx}`, ad });
       adIdx++;
       sinceAd = 0;
-      gap = 8 + (adIdx % 3); // 8, 9, 10, 8 …
+      gap = every + (adIdx % 3); // e.g. 8, 9, 10, 8 …
     }
   }
   out.push({ type: 'end', key: 'end' });

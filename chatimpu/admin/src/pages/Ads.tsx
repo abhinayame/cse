@@ -23,7 +23,7 @@ export default function Ads() {
       <div className="card" style={{ marginTop: 16 }}>
         <div className="row"><h3>Native ad frequency</h3><span className="spacer" />
           <label className="row">One full-screen ad every
-            <select className="input" style={{ width: 80 }} value={adFrequency} onChange={(e) => { setAdFrequency(+e.target.value); toast('Frequency updated for all readers'); }}>{[8, 9, 10].map((n) => <option key={n}>{n}</option>)}</select> flips (rotates 8 → 9 → 10)</label></div>
+            <select className="input" style={{ width: 80 }} value={adFrequency} onChange={async (e) => { if (await setAdFrequency(+e.target.value)) toast('Frequency updated for all readers'); }}>{[8, 9, 10].map((n) => <option key={n}>{n}</option>)}</select> flips (rotates 8 → 9 → 10)</label></div>
         <div className="faint" style={{ fontSize: 12.5, marginTop: 6 }}>Premium subscribers never see ads. Sponsored local stories are created from the story editor and always carry a “Sponsored” label.</div>
       </div>
       {form && (
@@ -40,7 +40,7 @@ export default function Ads() {
           <div className="field"><label>Image URL</label><input className="input" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} /></div>
           <div className="field"><label>Link or phone (tel:)</label><input className="input" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} /></div>
           <div className="field"><label>Budget (₹)</label><input type="number" className="input" value={form.budgetInr} onChange={(e) => setForm({ ...form, budgetInr: +e.target.value })} /></div>
-          <div className="row" style={{ alignSelf: 'end' }}><button className="btn primary" disabled={!form.advertiser || !form.headline.en} onClick={() => { upsertAd({ ...form, status: 'active' }); setForm(null); toast('Campaign launched'); }}>Launch</button><button className="btn ghost" onClick={() => setForm(null)}>Cancel</button></div>
+          <div className="row" style={{ alignSelf: 'end' }}><button className="btn primary" disabled={!form.advertiser || !form.headline.en} onClick={async () => { if (await upsertAd({ ...form, status: 'active' })) { setForm(null); toast('Campaign launched'); } }}>Launch</button><button className="btn ghost" onClick={() => setForm(null)}>Cancel</button></div>
         </div>
       )}
       <div className="card table-wrap" style={{ marginTop: 16, padding: 8 }}>

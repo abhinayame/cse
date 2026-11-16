@@ -26,7 +26,7 @@ export default function Polls() {
           <button className="btn primary" disabled={!q.en || opts.filter(Boolean).length < 2} onClick={() => {
             const p: Poll = { id: `poll-${Date.now()}`, category: cat, closesAt: new Date(Date.now() + hours * 3.6e6).toISOString(), question: q.te ? q : { en: q.en },
               options: opts.filter(Boolean).map((label, i) => ({ id: `o${i}`, label: { en: label } })), votes: { national: {} } };
-            addPoll(p); setQ({ en: '', te: '' }); setOpts(['', '', '']); toast('Poll is live');
+            addPoll(p).then((ok) => { if (ok) { setQ({ en: '', te: '' }); setOpts(['', '', '']); toast('Poll is live'); } });
           }}>Publish poll</button>
         </div>
       </div>

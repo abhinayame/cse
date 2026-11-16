@@ -6,7 +6,7 @@
 import { STORIES } from '@/data/stories';
 import { ADS, ALERTS, MAGAZINES, POLLS, VIDEOS } from '@/data/catalog';
 import type { Ad, CategoryId, CitizenSubmission, ContentLang, LocalAlert, Magazine, Poll, Story, VideoStory } from '@/data/types';
-import { supabase } from './supabase';
+import { mediaUrl, supabase } from './supabase';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -18,7 +18,7 @@ export async function fetchStories(q: FeedQuery): Promise<Story[]> {
       p_lang: q.lang, p_district: q.districtId, p_mandal: q.mandalId, p_limit: q.limit ?? 100,
     });
     if (error) throw error;
-    return data as Story[];
+    return (data as Story[]).map((st) => ({ ...st, image: mediaUrl(st.image) }));
   }
   await delay(650);
   return STORIES;
@@ -28,7 +28,7 @@ export async function fetchVideos(): Promise<VideoStory[]> {
   if (supabase) {
     const { data, error } = await supabase.from('video_feed').select('*').limit(30);
     if (error) throw error;
-    return data as VideoStory[];
+    return (data as VideoStory[]).map((v) => ({ ...v, uri: mediaUrl(v.uri), poster: mediaUrl(v.poster) }));
   }
   await delay(300);
   return VIDEOS;
@@ -58,6 +58,14 @@ export async function fetchAlerts(districtId: string): Promise<LocalAlert[]> {
     return data as LocalAlert[];
   }
   return ALERTS.filter((a) => a.districtId === districtId);
+}
+
+/** How many stories between native ad cards (set by a Super Admin in the CMS Ad manager). */
+export async function fetchAdFrequency(): Promise<number> {
+  if (!supabase) return 8;
+  const { data } = await supabase.from('app_settings').select('value').eq('key', 'ad_frequency').maybeSingle();
+  const n = Number(data?.value);
+  return n >= 4 && n <= 20 ? n : 8;
 }
 
 export const fetchMagazines = async (): Promise<Magazine[]> => MAGAZINES;

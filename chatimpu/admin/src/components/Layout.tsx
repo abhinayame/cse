@@ -22,7 +22,7 @@ const DEMO_SESSIONS: Record<Role, { name: string; districts: string[] }> = {
 };
 
 export function Layout() {
-  const { session, setSession, submissions } = useStore();
+  const { session, setSession, submissions, live, loading, signOut } = useStore();
   const pending = submissions.filter((s) => s.status === 'pending' && (!session.districts.length || session.districts.includes(s.districtId))).length;
   return (
     <div className="shell">
@@ -39,6 +39,12 @@ export function Layout() {
         <div className="foot">
           <div style={{ color: '#F7F3EA', fontWeight: 600 }}>{session.name}</div>
           <div>{ROLE_LABEL[session.role]}{session.districts.length ? ` · ${session.districts.join(', ').toUpperCase()}` : ''}</div>
+          {live && (
+            <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+              <span style={{ fontSize: 11.5 }}><span className="live-dot" />Live data</span>
+              <button className="btn sm" style={{ background: 'rgba(255,255,255,.08)', color: '#fff' }} onClick={signOut}>Sign out</button>
+            </div>
+          )}
           {isDemo && (
             <label style={{ display: 'block', marginTop: 10 }}>Demo: sign in as
               <select value={session.role} onChange={(e) => { const r = e.target.value as Role; setSession({ role: r, ...DEMO_SESSIONS[r] }); }}>
@@ -48,7 +54,7 @@ export function Layout() {
           )}
         </div>
       </aside>
-      <main><Outlet /></main>
+      <main>{loading && <div className="loading-bar" role="progressbar" aria-label="Loading newsroom data" />}<Outlet /></main>
     </div>
   );
 }

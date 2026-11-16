@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { MANDALS } from '@data/locations';
 import { PageHead } from '../components/Layout';
 import { useStore } from '../lib/store';
 import { ai, type Moderation as Mod } from '../lib/ai';
 import { ago, cap, district, mandal, wordCount } from '../lib/format';
 
 export default function Moderation() {
-  const { submissions, setSubmission, upsertStory, session, toast } = useStore();
+  const { submissions, approveSubmission, rejectSubmission, session, toast } = useStore();
   const [params, setParams] = useSearchParams();
   const [tab, setTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
   const scoped = submissions.filter((s) => !session.districts.length || session.districts.includes(s.districtId));
@@ -18,21 +17,23 @@ export default function Moderation() {
   const [busy, setBusy] = useState(false);
   const draft = sel && edit?.id === sel.id ? edit : sel && { id: sel.id, headline: sel.headline, body: sel.body };
 
-  const approve = () => {
+  const [acting, setActing] = useState(false);
+  const approve = async () => {
     if (!sel || !draft) return;
-    const m = MANDALS.find((x) => x.id === sel.mandalId)!;
-    upsertStory({
-      id: `cit-${sel.id}`, category: sel.category, stateId: sel.districtId === 'vsp' ? 'ap' : 'tg', districtId: sel.districtId, mandalId: sel.mandalId,
-      lat: m.lat, lng: m.lng, image: sel.media[0] ?? '', source: 'Citizen Reporter', publishedAt: new Date().toISOString(),
-      reporter: { name: sel.reporterName, verified: sel.verified, citizen: true },
-      reactions: { like: 0, wow: 0, sad: 0, angry: 0 }, comments: 0, shares: 0, views: 0,
-      content: { en: { headline: draft.headline, summary: draft.body }, [sel.lang]: { headline: draft.headline, summary: draft.body } },
-      status: 'published', pushOnPublish: false, author: session.name,
-    });
-    setSubmission(sel.id, { status: 'approved', headline: draft.headline, body: draft.body });
-    toast(`Approved and published to ${district(sel.districtId)}`);
-    setParams({});
+    setActing(true);
+    const ok = await approveSubmission(sel.id, draft.headline, draft.body);
+    setActing(false);
+    if (ok) { toast(`Approved and published to ${district(sel.districtId)}`); setParams({}); }
   };
+  const reject = async () => {
+    if (!sel) return;
+    setActing(true);
+    const ok = await rejectSubmission(sel.id);
+    setActing(false);
+    if (ok) { toast('Rejected — reporter notified'); setParams({}); }
+  };
+  const words = draft ? wordCount(draft.body) : 0;
+  const approveBlock = !sel ? '' : !sel.media.length ? 'Needs at least one photo to publish' : words < 30 || words > 100 ? 'Summary must be 30–100 words' : '';
 
   return (
     <>
@@ -61,7 +62,7 @@ export default function Moderation() {
             </div>
             <input className="input headline" value={draft.headline} onChange={(e) => setEdit({ ...draft, headline: e.target.value })} disabled={sel.status !== 'pending'} />
             <textarea className="input" rows={6} value={draft.body} onChange={(e) => setEdit({ ...draft, body: e.target.value })} disabled={sel.status !== 'pending'} />
-            <div className="faint" style={{ fontSize: 12 }}>{wordCount(draft.body)} words</div>
+            <div className="faint" style={{ fontSize: 12 }}>{words} words</div>
             {sel.media.length > 0 ? <div className="media-grid">{sel.media.map((m) => <img key={m} src={m} alt="Submitted media" />)}</div> : <div className="flag">No photos or video attached</div>}
             <div className="ai-panel">
               <div className="row"><b>AI pre-check</b><span className="spacer" />
@@ -77,9 +78,9 @@ export default function Moderation() {
             </div>
             {sel.status === 'pending' && (
               <div className="row">
-                <button className="btn primary" onClick={approve}>Approve & publish</button>
-                <button className="btn danger" onClick={() => { setSubmission(sel.id, { status: 'rejected' }); toast('Rejected — reporter notified'); setParams({}); }}>Reject</button>
-                <span className="faint" style={{ fontSize: 12.5 }}>Edits are saved with the approval. The reporter is credited on the story.</span>
+                <button className="btn primary" onClick={approve} disabled={acting || !!approveBlock} title={approveBlock}>Approve & publish</button>
+                <button className="btn danger" onClick={reject} disabled={acting}>Reject</button>
+                <span className="faint" style={{ fontSize: 12.5 }}>{approveBlock || 'Edits are saved with the approval. The reporter is credited on the story.'}</span>
               </div>
             )}
           </div>

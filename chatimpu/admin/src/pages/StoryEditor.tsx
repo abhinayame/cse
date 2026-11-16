@@ -20,10 +20,21 @@ const blank = (districtId = 'hyd'): CmsStory => {
   };
 };
 
-export default function StoryEditor() {
+/** Waits for live data so a deep link to /stories/:id opens the real story, not a blank form. */
+export default function StoryEditorPage() {
+  const { id } = useParams();
+  const { loading, stories } = useStore();
+  if (id && loading) return <div className="card empty">Loading story…</div>;
+  if (id && !stories.some((s) => s.id === id)) return <div className="card empty">Story not found, or you don't have access to it.</div>;
+  return <StoryEditor key={id ?? 'new'} />;
+}
+
+function StoryEditor() {
   const { id } = useParams();
   const nav = useNavigate();
-  const { stories, upsertStory, deleteStory, session, toast } = useStore();
+  const { stories, saveStory, deleteStory, session, toast } = useStore();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
   const existing = stories.find((s) => s.id === id);
   const [s, setS] = useState<CmsStory>(() => existing ?? { ...blank(session.districts[0]), author: session.name });
   const [lang, setLang] = useState<ContentLang>('en');
@@ -48,12 +59,17 @@ export default function StoryEditor() {
     try { await fn(); } catch (e) { setErr((e as Error).message); } finally { setBusy(null); }
   };
 
-  const save = () => {
+  const save = async () => {
     const m = publishable ? mode : 'draft';
     const status = m === 'now' ? 'published' : m === 'schedule' ? 'scheduled' : 'draft';
-    const id = s.id.startsWith('new-') ? s.content.en.headline.toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 40) + '-' + Date.now().toString(36) : s.id;
-    upsertStory({ ...s, id, status, publishedAt: status === 'published' && s.status !== 'published' ? new Date().toISOString() : s.publishedAt });
-    toast(status === 'published' ? (s.pushOnPublish ? 'Published · push sent to readers in ' + district(s.districtId) : 'Published') : status === 'scheduled' ? 'Scheduled' : 'Draft saved');
+    if (status === 'scheduled' && !s.publishAt) { setErr('Pick a date and time to schedule this story.'); return; }
+    const isNew = s.id.startsWith('new-');
+    const id = isNew ? s.content.en.headline.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) + '-' + Date.now().toString(36) : s.id;
+    setSaving(true);
+    const saved = await saveStory({ ...s, id, status }, { isNew, imageFile });
+    setSaving(false);
+    if (!saved) return; // the store already showed the error
+    toast(status === 'published' ? (s.pushOnPublish && existing?.status !== 'published' ? 'Published · push sent to readers in ' + district(s.districtId) : 'Published') : status === 'scheduled' ? 'Scheduled' : 'Draft saved');
     nav('/stories');
   };
 
@@ -62,10 +78,10 @@ export default function StoryEditor() {
   return (
     <>
       <PageHead kicker={existing ? 'Edit story' : 'New story'} title={text.headline || 'Untitled story'}>
-        {existing && session.role === 'super_admin' && <button className="btn ghost" onClick={() => { deleteStory(existing.id); nav('/stories'); }}>Delete</button>}
+        {existing && session.role === 'super_admin' && <button className="btn ghost" onClick={async () => { if (window.confirm('Delete this story for all readers? This cannot be undone.') && await deleteStory(existing.id)) { toast('Story deleted'); nav('/stories'); } }}>Delete</button>}
         <button className="btn ghost" onClick={() => nav(-1)}>Cancel</button>
-        <button className="btn primary" disabled={!valid} onClick={save} title={valid ? '' : 'English headline, 60–80 word summary and an image are required'}>
-          {!publishable || mode === 'draft' ? 'Save draft' : mode === 'schedule' ? 'Schedule' : 'Publish'}
+        <button className="btn primary" disabled={!valid || saving} onClick={save} title={valid ? '' : 'English headline, 60–80 word summary and an image are required'}>
+          {saving ? 'Saving…' : !publishable || mode === 'draft' ? 'Save draft' : mode === 'schedule' ? 'Schedule' : 'Publish'}
         </button>
       </PageHead>
       {err && <div className="banner" style={{ borderColor: 'var(--red)', background: 'rgba(229,72,77,.1)' }}>{err}</div>}
@@ -138,8 +154,8 @@ export default function StoryEditor() {
                 <option value="">Whole mandal</option>{villages.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}</select></div>
             <div className="field" style={{ gridColumn: '1 / -1' }}><label>Image</label>
               <div className="row">
-                <input className="input" style={{ flex: 1 }} placeholder="https://… (served via image CDN, auto WebP)" value={s.image.startsWith('blob:') ? '' : s.image} onChange={(e) => setS({ ...s, image: e.target.value })} />
-                <label className="btn ghost">Upload<input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) setS({ ...s, image: URL.createObjectURL(f) }); }} /></label>
+                <input className="input" style={{ flex: 1 }} placeholder="https://… (served via image CDN, auto WebP)" value={s.image.startsWith('blob:') ? '' : s.image} onChange={(e) => { setImageFile(null); setS({ ...s, image: e.target.value, imagePath: e.target.value }); }} />
+                <label className="btn ghost">Upload<input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setImageFile(f); setS({ ...s, image: URL.createObjectURL(f) }); } }} /></label>
               </div></div>
           </div>
 

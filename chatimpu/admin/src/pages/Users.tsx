@@ -5,7 +5,7 @@ import { useStore } from '../lib/store';
 import { ROLE_LABEL } from '../lib/roles';
 
 export default function Users() {
-  const { users, updateUser, toast } = useStore();
+  const { users, updateUser, toast, session } = useStore();
   return (
     <>
       <PageHead kicker="Access control" title="Users & roles" />
@@ -15,7 +15,7 @@ export default function Users() {
           <tbody>{users.map((u) => (
             <tr key={u.id}>
               <td><b>{u.name}</b></td><td className="faint">+91 {u.phone}</td>
-              <td><select className="input" style={{ width: 'auto' }} value={u.role} onChange={(e) => { updateUser(u.id, { role: e.target.value as Role | 'reader' }); toast(`${u.name} is now ${e.target.value === 'reader' ? 'a reader' : ROLE_LABEL[e.target.value as Role]}`); }}>
+              <td><select className="input" style={{ width: 'auto' }} value={u.role} disabled={u.id === session.userId} title={u.id === session.userId ? "You can't change your own role" : ''} onChange={async (e) => { const v = e.target.value; if (await updateUser(u.id, { role: v as Role | 'reader' })) toast(`${u.name} is now ${v === 'reader' ? 'a reader' : ROLE_LABEL[v as Role]}`); }}>
                 <option value="reader">Reader</option>{(Object.keys(ROLE_LABEL) as Role[]).map((r) => <option key={r} value={r}>{ROLE_LABEL[r]}</option>)}</select></td>
               <td><div className="row" style={{ gap: 8 }}>{DISTRICTS.map((d) => (
                 <label key={d.id} className="row" style={{ gap: 4, fontSize: 13 }}><input type="checkbox" checked={u.districts.includes(d.id)} onChange={(e) => updateUser(u.id, { districts: e.target.checked ? [...u.districts, d.id] : u.districts.filter((x) => x !== d.id) })} />{d.name}</label>

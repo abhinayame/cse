@@ -13,7 +13,7 @@ import type { FlipFeedHandle } from '@/components/feed/FlipFeed';
 import { useTabBarSpace } from '@/components/GlassTabBar';
 import { useStories } from '@/hooks/useStories';
 import { rankFeed, type FeedMode } from '@/lib/personalize';
-import { adsFor } from '@/lib/api';
+import { adsFor, fetchAdFrequency } from '@/lib/api';
 import { storyText } from '@/lib/text';
 import { usePrefs } from '@/store/prefs';
 import { useLibrary } from '@/store/library';
@@ -35,6 +35,8 @@ export default function FeedScreen() {
   const [mode, setMode] = useState<FeedMode>('forYou');
   const [index, setIndex] = useState(0);
   const pager = useRef<FlipFeedHandle>(null);
+  const [adEvery, setAdEvery] = useState(8);
+  useEffect(() => { fetchAdFrequency().then(setAdEvery).catch(() => {}); }, []);
 
   // Rank once per mode/load; affinity updates apply on next refresh so the deck doesn't reshuffle mid-read.
   const affinityRef = useRef(affinity);
@@ -44,8 +46,8 @@ export default function FeedScreen() {
       districtId: prefs.districtId, mandalId: prefs.mandalId, villageId: prefs.villageId, stateId: prefs.stateId,
       interests: prefs.interests, affinity: affinityRef.current,
     });
-    return withAds(ranked, adsFor(prefs.districtId), prefs.premium);
-  }, [stories, mode, prefs.districtId, prefs.mandalId, prefs.villageId, prefs.stateId, prefs.interests, prefs.premium]);
+    return withAds(ranked, adsFor(prefs.districtId), prefs.premium, adEvery);
+  }, [adEvery, stories, mode, prefs.districtId, prefs.mandalId, prefs.villageId, prefs.stateId, prefs.interests, prefs.premium]);
 
   const breaking = useMemo(() => (stories ?? []).filter((s) => s.isBreaking).map((s) => storyText(s, prefs.language).headline), [stories, prefs.language]);
   const topInset = insets.top + 8;

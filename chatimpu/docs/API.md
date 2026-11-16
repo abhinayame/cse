@@ -40,6 +40,7 @@ provider (MSG91 / Twilio / Gupshup) under Auth → Providers → Phone.
 
 | Purpose | Call | Roles |
 |---|---|---|
+| Staff story list (incl. drafts) | `GET /rest/v1/cms_stories?select=doc&order=updated_at.desc` — `doc` is the app `Story` shape plus `status`, `publishAt`, `pushOnPublish`, `imagePath`, `author` | staff |
 | Create / edit story | `POST/PATCH /rest/v1/stories` + `/rest/v1/story_translations` (one row per language; summary 30–100 words enforced by a CHECK) | super_admin, editor, district_moderator (own districts), reporter (own drafts) |
 | Schedule | `status = 'scheduled', publish_at = …`; `select publish_due()` runs every minute via pg_cron | as above |
 | Moderation queue | `GET /rest/v1/citizen_reports?status=eq.pending&order=submitted_at` | moderators of that district, editors, super admin |
@@ -49,6 +50,8 @@ provider (MSG91 / Twilio / Gupshup) under Auth → Providers → Phone.
 | Ads | `/rest/v1/ads`, `/rest/v1/advertisers` | super_admin |
 | Analytics | `GET /rest/v1/analytics_daily`, `analytics_category`, `analytics_retention` | staff |
 | Roles | `PATCH /rest/v1/profiles?id=eq.<id>` `{ role, verified_reporter }`, `moderator_districts` | super_admin |
+| App settings | `GET /rest/v1/app_settings` (public read; e.g. `ad_frequency`), `POST …?on_conflict=key` to change | super_admin writes |
+| District totals | `GET /rest/v1/analytics_district` | staff |
 
 ### Edge Function `ai-assist` (Claude)
 

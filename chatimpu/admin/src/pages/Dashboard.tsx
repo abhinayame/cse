@@ -1,15 +1,16 @@
 import { Link } from 'react-router-dom';
-import { ANALYTICS, DISTRICT_STATS } from '@data/catalog';
 import { PageHead } from '../components/Layout';
 import { BarList, Stat, TrendChart } from '../components/Charts';
-import { useScopedStories, useStore } from '../lib/store';
+import { useScopedStories, useStore, type DailyStat } from '../lib/store';
 import { compact, district, ago } from '../lib/format';
 
 export default function Dashboard() {
-  const { session, submissions } = useStore();
+  const { session, submissions, analytics: ANALYTICS, districtStats: DISTRICT_STATS } = useStore();
+  const empty: DailyStat = { day: '', views: 0, flips: 0, shares: 0, dau: 0, retentionD7: 0 };
   const stories = useScopedStories();
-  const last = ANALYTICS.at(-1)!, prevWeek = ANALYTICS.at(-8)!;
-  const pct = (a: number, b: number) => ((a - b) / b) * 100;
+  const last = ANALYTICS.at(-1) ?? empty, prevWeek = ANALYTICS.at(-8) ?? empty;
+  const pct = (a: number, b: number) => (b ? ((a - b) / b) * 100 : undefined);
+  const hasTraffic = ANALYTICS.some((d) => d.views > 0);
   const pending = submissions.filter((s) => s.status === 'pending' && (!session.districts.length || session.districts.includes(s.districtId)));
   const top = [...stories].sort((a, b) => b.views - a.views).slice(0, 5);
   return (
@@ -26,11 +27,13 @@ export default function Dashboard() {
       <div className="grid cols-3" style={{ marginTop: 16, gridTemplateColumns: '2fr 1fr' }}>
         <div className="card">
           <h2>Views</h2><div className="muted" style={{ marginBottom: 10 }}>Last 14 days, all districts</div>
-          <TrendChart data={ANALYTICS} dataKey="views" label="Views" />
+          {hasTraffic ? <TrendChart data={ANALYTICS as unknown as Record<string, number | string>[]} dataKey="views" label="Views" />
+            : <div className="empty">No reader activity yet. Views appear here as readers open stories in the app.</div>}
         </div>
         <div className="card">
           <h2>By district</h2><div className="muted" style={{ marginBottom: 16 }}>Views, last 30 days</div>
-          <BarList rows={DISTRICT_STATS.map((d) => ({ label: district(d.districtId), value: d.views }))} format={compact} />
+          {DISTRICT_STATS.length ? <BarList rows={DISTRICT_STATS.map((d) => ({ label: district(d.districtId), value: d.views }))} format={compact} />
+            : <div className="empty">No district data yet</div>}
           <div className="muted" style={{ marginTop: 18, fontSize: 12.5 }}>Retention D7: {DISTRICT_STATS.map((d) => `${district(d.districtId)} ${Math.round(d.retention * 100)}%`).join(' · ')}</div>
         </div>
       </div>
