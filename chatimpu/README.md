@@ -8,22 +8,29 @@ with a 3D page-flip, filtered down to your district, mandal and village, in 9 In
 
 ## Brand
 
-**Colours — red · white · black.** Brand red `#D7141A`, near-black `#0A0A0A`, white `#FFFFFF`.
-Text on red is always white (5.2:1); red used as small text on black switches to `#FF4D52` (6.1:1),
-so every combination meets WCAG AA. Light, Night and AMOLED themes all use the same three colours.
+**Logo.** The red drum-man emblem (the village *chatimpu* drum-beat announcement) with the bold navy
+చాటింపు wordmark and www.chatimpu.com. The original artwork is used for the app icon, adaptive/monochrome
+Android icons, splash, launch animation, share card, CMS and reporter portal (`app/assets/brand/emblem.png`,
+`admin/public/chatimpu-emblem.png`).
+
+**Colours — from the logo.** Emblem red `#ED1C24`, wordmark navy `#2E3192`, white, plus near-black
+`#0A0A0A` for the Night/AMOLED reading themes. Buttons and small red text use `#D7141A` (white on it is 5.2:1)
+and switch to `#FF4D52` on black (6.1:1); navy text on white is 10.7:1, so every combination meets WCAG AA.
 
 **Telugu typography.** Chosen from the open-licensed (SIL OFL, free to embed in apps) Telugu faces
 designed for news and screen reading:
 
 | Role | Font | Why |
 |---|---|---|
-| Headlines, wordmark | **Ramabhadra** | Bold Telugu display face built for headlines and large sizes; one of the most used Telugu fonts on Google Fonts |
-| Story text | **Mandali** | Designed specifically for Telugu news publications; open, smooth letterforms and many distinct conjuncts, comfortable for 60–80 word summaries |
+| Headlines, wordmark | **Ramabhadra Bold** | Ramabhadra is the popular Telugu headline face; it ships in one weight, so we build a real bold cut from it (`tools/make_ramabhadra_bold.py`, FreeType outline emboldening; OFL) — iOS does not fake bold for custom fonts |
+| Story text | **Ramabhadra** (regular) | Same family as the headlines at normal weight, so cards read as one voice |
 | Buttons, labels, tabs | **Hind Guntur** (500/600) | Indian Type Foundry UI family with real weights, so small Telugu UI text stays crisp |
 
-Each Telugu face gets its own size and line-height correction (`app/src/theme/fonts.ts`): Ramabhadra is
-set ~10% smaller with tight leading; Mandali keeps full size with 1.36× leading so vowel signs and
-conjuncts never clip. English uses Playfair Display + Inter. The CMS loads the same Telugu fonts.
+Each Telugu role gets its own size and line-height correction (`app/src/theme/fonts.ts`): Ramabhadra is a
+wide face with tall stacks (natural line height 1.9× its size), so headlines are set ~12% smaller and story
+text ~8% smaller with ~1.8× leading; the feed card gives Indic summaries a little more room (photo 33% of the
+screen instead of 40%) so a full summary fits. English uses Playfair Display + Inter. The CMS and reporter
+portal use the same faces (the bold cut is served as Ramabhadra weight 700).
 
 <p>
 <img src="docs/screenshots/feed-en.jpg" width="200" alt="Flip feed, light theme">
@@ -34,7 +41,7 @@ conjuncts never clip. English uses Playfair Display + Inter. The CMS loads the s
 <p>
 <img src="docs/screenshots/local-en.jpg" width="200" alt="Local, Telugu">
 <img src="docs/screenshots/profile-amoled.jpg" width="200" alt="Profile, AMOLED theme">
-<img src="docs/screenshots/story-te.jpg" width="200" alt="Telugu story: Ramabhadra + Mandali">
+<img src="docs/screenshots/story-te.jpg" width="200" alt="Telugu story: Ramabhadra Bold headline + Ramabhadra story text">
 <img src="docs/screenshots/splash.jpg" width="200" alt="Splash">
 </p>
 <img src="docs/screenshots/cms-dash.jpg" width="820" alt="Newsroom CMS dashboard">
@@ -114,7 +121,7 @@ Other one-time setup:
 | Area | Where |
 |---|---|
 | Design system — tokens, light / night / AMOLED themes, WCAG AA notes | `app/src/theme/` |
-| Per-language fonts (Playfair + Inter; Telugu: Ramabhadra + Mandali + Hind Guntur; Noto Serif Devanagari headlines; Noto Sans for other scripts), lazily loaded | `app/src/theme/fonts.ts` |
+| Per-language fonts (Playfair + Inter; Telugu: Ramabhadra Bold headlines + Ramabhadra story text + Hind Guntur labels; Noto Serif Devanagari headlines; Noto Sans for other scripts), lazily loaded | `app/src/theme/fonts.ts` |
 | 9-language UI (en, te, hi fully; ta, kn, ml, mr, bn, gu core UI with English fallback) | `app/src/i18n/` |
 | 3D flip feed (Flipboard-style split-page fold, flicker-free, haptic on flip, a11y next/prev actions) | `app/src/components/feed/FlipFeed.tsx` |
 | Story card, reactions 👍 😮 😢 😡, Listen (TTS), bookmark, WhatsApp share | `components/feed/StoryCard.tsx` |

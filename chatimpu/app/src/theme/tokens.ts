@@ -1,9 +1,13 @@
 /**
- * Chatimpu design tokens — bold editorial red / white / black.
+ * Chatimpu design tokens — the logo's red + navy on white, with black for the dark reading mode.
  * Brand palette is fixed; semantic colours are derived per theme in themes.ts.
  */
 export const palette = {
-  // Chatimpu brand: red · white · black
+  // Chatimpu brand (from the logo): drum-man emblem red #ED1C24 · wordmark navy #2E3192 · white
+  logoRed: '#ED1C24',    // exact logo red — emblem, large brand fills (4.4:1 on white: large text only)
+  navy: '#2E3192',       // wordmark navy — brand text on white (10.6:1), secondary accent
+  navyBright: '#A9ACF5', // navy-family text on black (9.3:1)
+  navyTint: '#ECEDF9',   // navy-tinted surfaces on white
   red: '#D7141A',        // brand red — buttons, active states, breaking (white text on it = 5.2:1)
   redDeep: '#B00E13',    // pressed / small red text on white (7.2:1)
   redBright: '#FF4D52',  // red text & icons on black (6.1:1)

@@ -1,3 +1,6 @@
+/* Ramabhadra ships in one weight; this is its emboldened cut (SIL OFL, see /fonts/OFL-Ramabhadra.txt),
+   registered as weight 700 so Telugu headlines and the wordmark get real bold glyphs, not synthetic bold. */
+@font-face { font-family: 'Ramabhadra'; font-weight: 700; font-style: normal; font-display: swap; src: url('/fonts/RamabhadraChatimpu-Bold.ttf') format('truetype'); }
 /* Chatimpu newsroom — red · white · black */
 :root {
   --ink: #0A0A0A; --white: #FFFFFF; --red: #D7141A; --red-deep: #B00E13; --red-bright: #FF4D52; --green: #1F8A55;
@@ -6,8 +9,9 @@
   --chart-1: #D7141A; --chart-2: #2563EB; --grid: rgba(10,10,10,.08);
   --shadow: 0 8px 24px rgba(0,0,0,.06);
   --serif: 'Playfair Display', 'Ramabhadra', Georgia, serif;
-  --sans: Inter, 'Hind Guntur', 'Mandali', system-ui, sans-serif;
-  --te-head: 'Ramabhadra', serif; --te-body: 'Mandali', sans-serif;
+  --sans: Inter, 'Hind Guntur', 'Ramabhadra', system-ui, sans-serif;
+  --te-head: 'Ramabhadra', serif; --te-body: 'Ramabhadra', sans-serif;
+  --logo-red: #ED1C24; --navy: #2E3192;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -30,7 +34,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .shell { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
 .sidebar { background: var(--sidebar); color: var(--sidebar-text); padding: 22px 14px; display: flex; flex-direction: column; gap: 4px; position: sticky; top: 0; height: 100vh; }
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 22px; color: var(--white); font-family: var(--serif); font-size: 22px; font-weight: 700; }
-.brand .mono { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg,#F04046,#D7141A,#A30E12); color: #fff; display: grid; place-items: center; font-family: var(--te-head); font-size: 15px; }
+.brand .mono { width: 38px; height: 38px; flex: none; }
 .brand small { display: block; font: 600 10px var(--sans); letter-spacing: .14em; color: var(--red); text-transform: uppercase; }
 .nav a { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; font-weight: 500; }
 .nav a:hover { background: rgba(255,255,255,.05); }
@@ -144,15 +148,15 @@ textarea.input { resize: vertical; min-height: 120px; line-height: 1.6; }
   .table-wrap { overflow-x: auto; }
 }
 
-/* Telugu typography (matches the app): Ramabhadra headlines, Mandali body */
-:lang(te) h4, .te-head { font-family: var(--te-head); font-weight: 400; line-height: 1.5; }
-.te-body { font-family: var(--te-body); line-height: 1.75; }
+/* Telugu typography (matches the app): Ramabhadra Bold headlines + wordmark, Ramabhadra Regular story text */
+:lang(te) h4, .te-head { font-family: var(--te-head); font-weight: 700; line-height: 1.5; }
+.te-body { font-family: var(--te-body); font-weight: 400; line-height: 1.8; }
 
 /* sign-in */
 .auth-shell { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(circle at 20% 0%, rgba(215,20,26,.10), transparent 45%), var(--bg); }
 .auth-card { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 24px; padding: 28px; box-shadow: 0 24px 60px rgba(0,0,0,.10); }
 .brand-lg { display: flex; align-items: center; gap: 10px; font: 700 20px var(--serif); }
-.brand-lg .mono { width: 38px; height: 38px; border-radius: 11px; background: linear-gradient(135deg,#F04046,#D7141A,#A30E12); color: #fff; display: grid; place-items: center; font-family: var(--te-head); font-size: 16px; font-weight: 400; }
+.brand-lg .mono { width: 44px; height: 44px; flex: none; }
 .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #3CC584; margin-right: 6px; }
 .loading-bar { height: 3px; background: linear-gradient(90deg, transparent, var(--red), transparent); background-size: 200% 100%; animation: lb 1.1s linear infinite; border-radius: 2px; margin-bottom: 16px; }
 @keyframes lb { from { background-position: 200% 0 } to { background-position: -200% 0 } }

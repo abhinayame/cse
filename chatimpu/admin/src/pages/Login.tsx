@@ -45,7 +45,7 @@ export default function Login() {
   return (
     <div className="auth-shell">
       <div className="auth-card grid" style={{ gap: 18 }}>
-        <div className="brand-lg"><span className="mono">చా</span>Chatimpu Newsroom</div>
+        <div className="brand-lg"><img className="mono" src="/chatimpu-emblem.png" alt="" />Chatimpu Newsroom</div>
         <div>
           <h1 style={{ fontSize: 26 }}>Staff sign in</h1>
           <p className="muted" style={{ margin: '6px 0 0' }}>For editors, district moderators and reporters.</p>

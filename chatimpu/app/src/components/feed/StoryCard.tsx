@@ -32,7 +32,9 @@ export function StoryCard({ story, width, height, topInset, bottomInset, speakin
   const saved = useLibrary((s) => s.bookmarks.includes(story.id));
   const toggle = useLibrary((s) => s.toggleBookmark);
   const txt = storyText(story, lang);
-  const imgH = Math.round(height * 0.4);
+  // Indic summaries (e.g. Telugu in Ramabhadra) need more lines than English for the same word count,
+  // so the photo gives up a little height instead of the story text shrinking.
+  const imgH = Math.round(height * (txt.lang === 'en' ? 0.4 : 0.33));
   const [bodyH, setBodyH] = useState(0);
   const lineH = Math.round(25 * t.lh(txt.lang));
   const lines = bodyH ? Math.max(2, Math.floor(bodyH / lineH)) : 6;

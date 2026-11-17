@@ -75,7 +75,7 @@ export default function Help() {
       <section className="rp-section rp-card">
         <h2 style={{ marginBottom: 8 }}>{lang === 'te' ? 'సంప్రదించండి' : 'Contact support'}</h2>
         <p className="rp-meta">{lang === 'te' ? 'మీ రిపోర్టర్ ID, సబ్మిషన్ / ఉపసంహరణ కోడ్ (ఉదా. CHT-…, WDR-…) తెలపండి. పాస్‌వర్డ్, OTP, పూర్తి ఖాతా నంబర్ ఎప్పుడూ అడగం.' : 'Quote your submission or withdrawal code (e.g. CHT-…, WDR-…). We will never ask for your OTP, PIN or full account number.'}</p>
-        <a className="rp-btn dark block" style={{ marginTop: 10 }} href="mailto:reporters@chatimpu.app">reporters@chatimpu.app</a>
+        <a className="rp-btn dark block" style={{ marginTop: 10 }} href="mailto:reporters@chatimpu.com">reporters@chatimpu.com</a>
       </section>
     </>
   );

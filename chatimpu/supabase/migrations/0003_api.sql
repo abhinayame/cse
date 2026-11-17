@@ -1,5 +1,5 @@
 -- API: RPC functions + views consumed by the app and CMS ────────
--- Image CDN base. Set per environment:  alter database postgres set app.image_cdn = 'https://img.chatimpu.app';
+-- Image CDN base. Set per environment:  alter database postgres set app.image_cdn = 'https://img.chatimpu.com';
 -- The CDN (Cloudflare Images / imgproxy / Supabase image transforms) serves auto-WebP/AVIF at the requested width.
 create or replace function image_url(path text, w int default 900) returns text language sql immutable as $$
   select case when path ~ '^https?://' then path

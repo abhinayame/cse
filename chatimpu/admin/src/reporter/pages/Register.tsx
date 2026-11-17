@@ -35,7 +35,7 @@ export default function Register() {
   return (
     <div className="rp-wrap" style={{ paddingTop: 20 }}>
       <div className="rp-row" style={{ justifyContent: 'space-between' }}>
-        <div className="rp-logo"><span className="mono">చా</span><div>చాటింపు<small>{t('brandSub')}</small></div></div>
+        <div className="rp-logo"><img className="mono" src="/chatimpu-emblem.png" alt="" /><div><span className="wordmark" lang="te">చాటింపు</span><small>{t('brandSub')}</small></div></div>
         <button className="rp-lang" onClick={() => setLang(lang === 'te' ? 'en' : 'te')}>{t('language')}</button>
       </div>
       <h1 style={{ marginTop: 18 }}>{t('joinTitle')}</h1>

@@ -1,51 +1,52 @@
 import { useEffect } from 'react';
 import { View } from 'react-native';
 import { router } from 'expo-router';
-import Animated, { Easing, FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
+import Animated, { Easing, FadeIn, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { Txt } from '@/components/ui';
+import { Emblem, Wordmark } from '@/components/Brand';
 import { palette } from '@/theme';
 import { usePrefs } from '@/store/prefs';
 import { useT } from '@/i18n';
 import { APP } from '@/config';
 
-/** Animated splash: red చా monogram springs in, a light sweep crosses it, the చాటింపు wordmark rises. */
+/**
+ * Launch screen matching the logo lockup on white (same as the native splash): the drum-man emblem
+ * drops in with two "drum-beat" ripples, then the bold navy చాటింపు wordmark and the red web address rise.
+ */
 export default function Splash() {
   const onboarded = usePrefs((s) => s.onboarded);
   const tr = useT();
-  const scale = useSharedValue(0.4);
-  const rot = useSharedValue(-12);
-  const sweep = useSharedValue(-120);
-  const ring = useSharedValue(0);
+  const scale = useSharedValue(0.5);
+  const beat = useSharedValue(0);
+  const beat2 = useSharedValue(0);
 
   useEffect(() => {
-    scale.value = withSpring(1, { damping: 11, stiffness: 120 });
-    rot.value = withSpring(0, { damping: 12 });
-    ring.value = withDelay(250, withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }));
-    sweep.value = withDelay(500, withSequence(withTiming(140, { duration: 800, easing: Easing.inOut(Easing.quad) })));
-    const id = setTimeout(() => router.replace(onboarded ? '/(tabs)/feed' : '/onboarding/language'), 1900);
+    scale.value = withSequence(withSpring(1.06, { damping: 9, stiffness: 140 }), withSpring(1, { damping: 14 }));
+    const ripple = () => withRepeat(withTiming(1, { duration: 900, easing: Easing.out(Easing.cubic) }), 2, false);
+    beat.value = withDelay(220, ripple());
+    beat2.value = withDelay(520, ripple());
+    const id = setTimeout(() => router.replace(onboarded ? '/(tabs)/feed' : '/onboarding/language'), 2000);
     return () => clearTimeout(id);
-  }, [onboarded, ring, rot, scale, sweep]);
+  }, [onboarded, scale, beat, beat2]);
 
-  const mono = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }, { rotate: `${rot.value}deg` }] }));
-  const shine = useAnimatedStyle(() => ({ transform: [{ translateX: sweep.value }, { rotate: '20deg' }] }));
-  const ringS = useAnimatedStyle(() => ({ opacity: 1 - ring.value, transform: [{ scale: 0.8 + ring.value * 0.9 }] }));
+  const em = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  const r1 = useAnimatedStyle(() => ({ opacity: 0.55 * (1 - beat.value), transform: [{ scale: 1 + beat.value * 0.7 }] }));
+  const r2 = useAnimatedStyle(() => ({ opacity: 0.4 * (1 - beat2.value), transform: [{ scale: 1 + beat2.value * 0.7 }] }));
+  const ring = { position: 'absolute' as const, width: 168, height: 168, borderRadius: 84, borderWidth: 2, borderColor: palette.logoRed };
 
   return (
-    <View style={{ flex: 1, backgroundColor: palette.ink, alignItems: 'center', justifyContent: 'center' }}>
-      <Animated.View style={[{ position: 'absolute', width: 180, height: 180, borderRadius: 90, borderWidth: 1.5, borderColor: palette.red }, ringS]} />
-      <Animated.View style={[{ width: 104, height: 104, borderRadius: 30, overflow: 'hidden' }, mono]}>
-        <LinearGradient colors={['#F04046', palette.red, '#A30E12']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Txt lang="en" style={{ fontFamily: 'Ramabhadra_400Regular', fontSize: 50, lineHeight: 92, color: palette.white }}>చా</Txt>
-        </LinearGradient>
-        <Animated.View style={[{ position: 'absolute', top: -40, width: 30, height: 200, backgroundColor: 'rgba(255,255,255,0.45)' }, shine]} />
-      </Animated.View>
-      <Animated.View entering={FadeInDown.delay(450).springify().damping(16)} style={{ alignItems: 'center', marginTop: 26 }}>
-        <Txt lang="en" style={{ fontFamily: 'Ramabhadra_400Regular', fontSize: 42, lineHeight: 72, color: palette.white }}>{APP.nameTe}</Txt>
-        <Txt lang="en" style={{ fontFamily: 'Inter_700Bold', fontSize: 13, lineHeight: 16, color: palette.redBright, letterSpacing: 6, marginTop: -4 }}>{APP.name.toUpperCase()}</Txt>
+    <View style={{ flex: 1, backgroundColor: palette.white, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ width: 168, height: 168, alignItems: 'center', justifyContent: 'center' }}>
+        <Animated.View style={[ring, r1]} />
+        <Animated.View style={[ring, r2]} />
+        <Animated.View style={em}><Emblem size={168} /></Animated.View>
+      </View>
+      <Animated.View entering={FadeInDown.delay(450).springify().damping(16)} style={{ alignItems: 'center', marginTop: 18 }}>
+        <Wordmark size={46} />
+        <Txt lang="en" style={{ fontFamily: 'Inter_700Bold', fontSize: 14, lineHeight: 18, color: palette.redDeep, letterSpacing: 0.4, marginTop: -6 }}>www.{APP.domain}</Txt>
       </Animated.View>
       <Animated.View entering={FadeIn.delay(850).duration(600)}>
-        <Txt v="bodySm" color="#BDBDBD" style={{ marginTop: 14 }}>{tr('tagline')}</Txt>
+        <Txt v="bodySm" color={palette.slate} style={{ marginTop: 18 }}>{tr('tagline')}</Txt>
       </Animated.View>
     </View>
   );

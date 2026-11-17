@@ -32,7 +32,7 @@ export function Layout() {
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="brand"><span className="mono">చా</span><div>Chatimpu<small>Newsroom</small></div></div>
+        <div className="brand"><img className="mono" src="/chatimpu-emblem.png" alt="" /><div>Chatimpu<small>Newsroom</small></div></div>
         <nav className="nav">
           {NAV.filter((n) => sectionsFor(session).includes(n.section) && (!n.mode || (n.mode === 'live') === live)).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'}>

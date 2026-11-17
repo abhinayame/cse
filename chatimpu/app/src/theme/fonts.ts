@@ -1,6 +1,7 @@
 /**
  * Per-language font pairing. Latin uses Playfair Display (serif headlines) + Inter (body).
- * Telugu uses Ramabhadra + Mandali + Hind Guntur (see README → Typography); Devanagari gets a serif
+ * Telugu uses Ramabhadra throughout: a bold cut for headlines and the wordmark, regular for story text,
+ * plus Hind Guntur for small UI labels (see README → Typography). Devanagari gets a serif
  * headline face; other Indic scripts use matching Noto families.
  * Fonts are loaded lazily per language (see useLanguageFonts) to keep startup fast.
  */
@@ -24,7 +25,11 @@ export const latinFonts = {
   Inter_700Bold: require('@expo-google-fonts/inter/700Bold/Inter_700Bold.ttf'),
   // brand wordmark చాటింపు — loaded at startup in every language
   Ramabhadra_400Regular: require('@expo-google-fonts/ramabhadra/400Regular/Ramabhadra_400Regular.ttf'),
+  RamabhadraChatimpu_700Bold: require('../../assets/fonts/RamabhadraChatimpu-Bold.ttf'),
 };
+
+/** Telugu bold display face (Ramabhadra emboldened, SIL OFL — see tools/make_ramabhadra_bold.py). */
+export const TE_BOLD = 'RamabhadraChatimpu_700Bold';
 
 const LATIN: FontPair = {
   headline: 'PlayfairDisplay_600SemiBold',
@@ -36,11 +41,11 @@ const LATIN: FontPair = {
 
 /** Font assets required for each language (in addition to Latin, which is always loaded). */
 export const languageFontAssets: Partial<Record<LangCode, Record<string, number>>> = {
-  // Telugu: Ramabhadra (news headlines) + Mandali (body, designed for Telugu news publishing)
-  // + Hind Guntur SemiBold for UI labels/buttons. All SIL Open Font License, free to embed in apps.
+  // Telugu: Ramabhadra Bold (headlines, wordmark) + Ramabhadra Regular (story text)
+  // + Hind Guntur for small UI labels/buttons. All SIL Open Font License, free to embed in apps.
   te: {
     Ramabhadra_400Regular: require('@expo-google-fonts/ramabhadra/400Regular/Ramabhadra_400Regular.ttf'),
-    Mandali_400Regular: require('@expo-google-fonts/mandali/400Regular/Mandali_400Regular.ttf'),
+    RamabhadraChatimpu_700Bold: require('../../assets/fonts/RamabhadraChatimpu-Bold.ttf'),
     HindGuntur_500Medium: require('@expo-google-fonts/hind-guntur/500Medium/HindGuntur_500Medium.ttf'),
     HindGuntur_600SemiBold: require('@expo-google-fonts/hind-guntur/600SemiBold/HindGuntur_600SemiBold.ttf'),
   },
@@ -86,7 +91,8 @@ const pair = (headline: string, body: string, semibold: string): FontPair => ({
 
 export const fontPairs: Record<LangCode, FontPair> = {
   en: LATIN,
-  te: { headline: 'Ramabhadra_400Regular', headlineBold: 'Ramabhadra_400Regular', body: 'Mandali_400Regular', bodyMedium: 'HindGuntur_500Medium', bodySemibold: 'HindGuntur_600SemiBold' },
+  // Headlines bold, story text regular (normal weight) — both Ramabhadra.
+  te: { headline: 'RamabhadraChatimpu_700Bold', headlineBold: 'RamabhadraChatimpu_700Bold', body: 'Ramabhadra_400Regular', bodyMedium: 'Ramabhadra_400Regular', bodySemibold: 'HindGuntur_600SemiBold' },
   hi: pair('NotoSerifDevanagari_700Bold', 'NotoSansDevanagari_400Regular', 'NotoSansDevanagari_600SemiBold'),
   mr: pair('NotoSerifDevanagari_700Bold', 'NotoSansDevanagari_400Regular', 'NotoSansDevanagari_600SemiBold'),
   ta: pair('NotoSansTamil_700Bold', 'NotoSansTamil_400Regular', 'NotoSansTamil_700Bold'),
@@ -100,15 +106,15 @@ export const latinPair = LATIN;
 
 /** Indic scripts need extra line height so matras / conjuncts are not clipped. */
 export const lineHeightScale = (lang: LangCode, kind: 'headline' | 'body' | 'semibold' = 'body') =>
-  lang === 'en' ? 1 : lang === 'te' ? (kind === 'headline' ? 1.08 : 1.36) : 1.32;
+  lang === 'en' ? 1 : lang === 'te' ? (kind === 'headline' ? 1.12 : kind === 'body' ? 1.1 : 1.36) : 1.32;
 
 /**
  * Optical size correction per script, relative to the Latin type scale.
- * Ramabhadra is a heavy, wide display face → set it smaller; Mandali has a small
- * x-height → keep body at full size so long Telugu summaries stay comfortable.
+ * Ramabhadra is a heavy, wide face → headlines set smaller; story text in Ramabhadra Regular is
+ * slightly reduced too so a 60–80 word summary still fits a card, with generous line height.
  */
 export function sizeScale(lang: LangCode, kind: 'headline' | 'body' | 'semibold') {
   if (lang === 'en') return 1;
-  if (lang === 'te') return kind === 'headline' ? 0.9 : kind === 'body' ? 1.02 : 0.96;
+  if (lang === 'te') return kind === 'headline' ? 0.88 : kind === 'body' ? 0.92 : 0.96;
   return kind === 'headline' ? 0.86 : 0.94;
 }

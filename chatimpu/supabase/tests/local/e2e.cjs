@@ -287,7 +287,13 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
       await shot(rp, '19-notifications');
       await rp.getByRole('button', { name: 'తెలుగు' }).first().click().catch(() => {});
       await rp.goto(`${BASE}/reporter`);
+      await rp.locator('.rp-hero').waitFor();
+      await rp.evaluate(() => document.fonts.ready);
       await shot(rp, '20-home-telugu');
+      await rp.goto(`${BASE}/reporter/help`);
+      await rp.locator('details').first().click();
+      await rp.evaluate(() => document.fonts.ready);
+      await shot(rp, '20b-help-telugu-body-text');
     });
 
     await step('Assignment: editor creates an open assignment → reporter is notified and accepts', async () => {

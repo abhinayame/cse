@@ -297,7 +297,7 @@ These are flagged, not settled. Please have an Indian lawyer or CA review them.
 - RazorpayX account, keys, webhook secret and IP allowlisting (see §6), followed by a test-mode rehearsal against the real API.
 - `PAYOUT_ENCRYPTION_KEY`, generated and backed up in a secrets manager.
 - SMS provider with **DLT-registered** templates for OTP (see SUPABASE_SETUP §4).
-- A support mailbox: the portal links to `reporters@chatimpu.app`, so change it in `Help.tsx`.
+- A support mailbox: the portal links to `reporters@chatimpu.com`, so change it in `Help.tsx`.
 - A cron schedule for `notify-dispatch`, and `EXPO_PUBLIC_REPORTER_PORTAL_URL` for the reader app.
 - Legal and tax review (§12), and a TDS decision before the first payouts.
 - Backups: Supabase daily backups or PITR on a paid plan. Also export `wallet_ledger_entries`, `withdrawal_requests` and `payment_transactions` periodically for accounting.

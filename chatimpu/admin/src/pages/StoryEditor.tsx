@@ -186,7 +186,7 @@ function StoryEditor() {
             <div className="meta">{s.sponsor || s.source} · {preview.place}</div>
             <h4 style={{ fontFamily: lang === 'te' ? "'Ramabhadra', serif" : undefined, fontWeight: lang === 'te' ? 400 : undefined }}>{preview.headline || 'Your headline appears here'}</h4>
             <div className="rule" />
-            <p style={lang === 'te' ? { fontFamily: "'Mandali', sans-serif", fontSize: 13.5, lineHeight: 1.75 } : undefined}>{preview.summary || 'The 60–80 word summary appears here, exactly as readers will see it in the flip feed.'}</p>
+            <p style={lang === 'te' ? { fontFamily: "'Ramabhadra', sans-serif", fontWeight: 400, fontSize: 13, lineHeight: 1.8 } : undefined}>{preview.summary || 'The 60–80 word summary appears here, exactly as readers will see it in the flip feed.'}</p>
           </div>
           <div className="actions"><span>🎧 Listen</span><span>👍 React</span><span>Share</span></div>
         </div>

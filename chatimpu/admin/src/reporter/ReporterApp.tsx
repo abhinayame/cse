@@ -53,7 +53,7 @@ export default function ReporterApp() {
 }
 
 function Splash() {
-  return <div className="rp-auth"><div className="rp-logo"><span className="mono">చా</span></div></div>;
+  return <div className="rp-auth"><div className="rp-logo"><img className="mono" src="/chatimpu-emblem.png" alt="" /></div></div>;
 }
 
 function NoBackend() {
@@ -90,7 +90,7 @@ function Login() {
     <div className="rp-auth">
       <div className="rp-card">
         <div className="rp-row" style={{ justifyContent: 'space-between', marginBottom: 18 }}>
-          <div className="rp-logo"><span className="mono">చా</span><div>చాటింపు<small>{t('brandSub')}</small></div></div>
+          <div className="rp-logo"><img className="mono" src="/chatimpu-emblem.png" alt="" /><div><span className="wordmark" lang="te">చాటింపు</span><small>{t('brandSub')}</small></div></div>
           <LangToggle />
         </div>
         <h1>{t('signInTitle')}</h1>
@@ -162,7 +162,7 @@ function Shell({ children }: { children: ReactNode }) {
   return (
     <>
       <header className="rp-top"><div className="rp-top-in">
-        <div className="rp-logo" style={{ flex: 1 }}><span className="mono">చా</span><div>చాటింపు<small>{t('brandSub')}</small></div></div>
+        <div className="rp-logo" style={{ flex: 1 }}><img className="mono" src="/chatimpu-emblem.png" alt="" /><div><span className="wordmark" lang="te">చాటింపు</span><small>{t('brandSub')}</small></div></div>
         <LangToggle />
         <button className="rp-icon-btn" aria-label={t('notifications')} onClick={() => nav('/reporter/notifications')}>
           🔔{dash.unread > 0 && <span className="dot">{dash.unread > 9 ? '9+' : dash.unread}</span>}

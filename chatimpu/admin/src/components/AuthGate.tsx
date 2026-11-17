@@ -49,7 +49,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     return (
       <div className="auth-shell">
         <div className="auth-card grid" style={{ gap: 14 }}>
-          <div className="brand-lg"><span className="mono">చా</span>Chatimpu Newsroom</div>
+          <div className="brand-lg"><img className="mono" src="/chatimpu-emblem.png" alt="" />Chatimpu Newsroom</div>
           {state.kind === 'noAccess' ? (
             <>
               <h2>No newsroom access</h2>
