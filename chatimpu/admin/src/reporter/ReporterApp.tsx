@@ -67,7 +67,7 @@ function NoBackend() {
 
 function LangToggle() {
   const lang = useLang(); const t = useT();
-  return <button className="rp-lang" onClick={() => setLang(lang === 'te' ? 'en' : 'te')} aria-label="Change language">{t('language')}</button>;
+  return <button className="rp-lang" onClick={() => setLang(lang === 'te' ? 'en' : 'te')} title="Change language">{t('language')}</button>;
 }
 
 function Login() {

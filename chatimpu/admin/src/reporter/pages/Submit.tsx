@@ -167,7 +167,7 @@ export default function Submit() {
         </div>
       </section>
 
-      <section className="rp-section rp-card" aria-label={t('incidentLocation')}>
+      <section className="rp-section rp-card" aria-label={t('yourArea')}>
         <div className="rp-row" style={{ alignItems: 'flex-start' }}>
           <div className="rp-field grow"><label htmlFor="s-d">{t('district')}</label>
             <select id="s-d" value={f.district_id} onChange={(e) => setF({ ...f, district_id: e.target.value, mandal_id: MANDALS.find((m) => m.districtId === e.target.value)?.id ?? null })}>
@@ -224,7 +224,7 @@ export default function Submit() {
         <VoiceRecorder onDone={(blob, secs) => upload(new File([blob], `voice.${blob.type.includes('mp4') ? 'm4a' : 'webm'}`, { type: blob.type }), undefined, secs)} />
       </section>
 
-      <section className="rp-section rp-card" aria-label={t('sources')}>
+      <section className="rp-section rp-card">
         <div className="rp-field"><label htmlFor="s-src">🔒 {t('sources')}</label>
           <textarea id="s-src" value={f.source_notes ?? ''} onChange={(e) => setF({ ...f, source_notes: e.target.value })} />
           <span className="rp-hint">{t('sourcesHint')}</span></div>

@@ -19,7 +19,7 @@ export default function Wallet({ tab }: { tab: Tab }) {
         {(['withdraw', 'earnings', 'history', 'methods'] as Tab[]).map((k) => (
           <NavLink key={k} to={`/reporter/${k}`} className={({ isActive }) => (isActive ? 'on' : '')}
             style={{ flex: 1, textAlign: 'center', padding: '9px 10px', borderRadius: 9, fontWeight: 700, fontSize: 13, whiteSpace: 'nowrap' }}>
-            {t(k === 'methods' ? 'methods' : k === 'history' ? 'history' : k)}</NavLink>
+            {t(k === 'methods' ? 'tabMethods' : k === 'history' ? 'tabHistory' : k)}</NavLink>
         ))}
       </nav>
       {tab === 'withdraw' && <Withdraw />}
@@ -174,6 +174,7 @@ function History() {
               <div className="rp-meta">{w.code} · {w.method_snapshot?.kind === 'upi' ? 'UPI' : 'Bank'} {w.method_snapshot?.masked} · {fmtDate(w.created_at, lang)}</div>
               {w.utr && <div className="rp-meta">UTR: <b>{w.utr}</b>{w.paid_at ? ` · ${fmtDate(w.paid_at, lang)}` : ''}</div>}
               {w.reason && ['rejected', 'failed', 'reversed'].includes(w.status) && <div className="rp-hint" style={{ color: 'var(--red)' }}>{w.reason}</div>}
+              {['failed', 'reversed', 'rejected'].includes(w.status) && !w.needs_reconciliation && <div className="rp-hint" style={{ color: '#1F8A55' }}>✓ {t('restored')}</div>}
               {w.needs_reconciliation && <div className="rp-hint">⏳ Finance team is reconciling this payout. Your money is safe and will be restored if the payment did not go through.</div>}
               {['requested', 'under_review'].includes(w.status) && <button className="rp-btn ghost sm" style={{ marginTop: 8 }} onClick={() => cancel(w)}>{t('cancel')}</button>}
             </div>

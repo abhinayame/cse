@@ -63,7 +63,7 @@ async function assertPayoutsAllowed(db: SupabaseClient, env: Env, provider: Payo
   if (provider.mode === 'live') {
     if (env('APP_ENV') !== 'production') throw new HttpError(503, 'Live RazorpayX keys are only used when APP_ENV=production');
     const s = check(await db.from('app_settings').select('value').eq('key', 'payouts_live_enabled').maybeSingle()) as { value: unknown } | null;
-    if (s?.value !== true && s?.value !== 'true') throw new HttpError(503, 'Live payouts are switched off (Finance → Settings → payouts_live_enabled)');
+    if (s?.value !== true && s?.value !== 'true') throw new HttpError(503, 'Live payouts are switched off (CMS → Finance → Rate card & rules → Live payouts)');
   }
 }
 

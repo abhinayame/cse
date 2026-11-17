@@ -137,13 +137,15 @@ function Withdrawals({ names, provider }: { names: Record<string, ReporterRow>; 
         <div className="card" style={{ padding: 8 }}>
           <div className="faint" style={{ padding: '4px 10px', fontSize: 12.5 }}>{rows?.length ?? 0} withdrawals · {paise(total)}</div>
           {rows === null ? <div className="empty">Loading…</div> : rows.length === 0 ? <div className="empty">Nothing here ✓</div> : rows.map((r) => (
-            <div key={r.id} className={`queue-item ${sel === r.id ? 'on' : ''}`} role="button" tabIndex={0} onClick={() => setSel(r.id)} onKeyDown={(e) => e.key === 'Enter' && setSel(r.id)}>
-              {r.status === 'approved' && <input type="checkbox" aria-label={`Select ${r.code}`} checked={picked.has(r.id)} onClick={(e) => e.stopPropagation()} onChange={(e) => { const p = new Set(picked); if (e.target.checked) p.add(r.id); else p.delete(r.id); setPicked(p); }} />}
+            <div key={r.id} className="row" style={{ gap: 0, alignItems: 'stretch' }}>
+              {r.status === 'approved' && <input type="checkbox" style={{ margin: '0 4px 0 8px' }} aria-label={`Include ${r.code} in the bank payout file`} checked={picked.has(r.id)} onChange={(e) => { const p = new Set(picked); if (e.target.checked) p.add(r.id); else p.delete(r.id); setPicked(p); }} />}
+            <div className={`queue-item ${sel === r.id ? 'on' : ''}`} style={{ flex: 1 }} role="button" tabIndex={0} aria-pressed={sel === r.id} onClick={() => setSel(r.id)} onKeyDown={(e) => e.key === 'Enter' && setSel(r.id)}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="row"><b>{names[r.reporter_id]?.full_name ?? 'Reporter'}</b><span className="spacer" /><span className="money">{paise(r.amount_paise)}</span></div>
                 <div className="row faint" style={{ fontSize: 12.5 }}>{r.code} · {r.method_snapshot.kind === 'upi' ? 'UPI' : 'Bank'} {r.method_snapshot.masked} · {when(r.created_at)}<span className="spacer" /><Status s={r.status} /></div>
                 {r.needs_reconciliation && <span className="pill red" style={{ marginTop: 4 }}>Needs reconciliation</span>}
               </div>
+            </div>
             </div>
           ))}
         </div>

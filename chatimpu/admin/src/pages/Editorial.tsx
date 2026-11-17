@@ -138,7 +138,7 @@ function Detail({ r, reporter, onChange }: { r: Report; reporter?: ReporterLite;
 
   const run = async (key: string, fn: () => Promise<unknown>, okMsg: string) => {
     setBusy(key);
-    try { await fn(); toast(okMsg); await onChange(); setHist(await reviewHistory(r.id)); return true; }
+    try { const extra = await fn(); toast(typeof extra === 'string' ? `${okMsg} · ${extra}` : okMsg); await onChange(); setHist(await reviewHistory(r.id)); return true; }
     catch (e) { toast(`⚠ ${(e as Error).message}`); return false; } finally { setBusy(null); }
   };
   const saveEdits = () => run('save', () => editReport(r.id, { headline: draft.headline, body: draft.body, summary: draft.summary, category_id: draft.category }), 'Edits saved');
@@ -158,7 +158,7 @@ function Detail({ r, reporter, onChange }: { r: Report; reporter?: ReporterLite;
       const m = media.find((x) => x.id === cover);
       const imagePath = m ? await promoteCover(m, r.code ?? r.id) : null;
       const res = await approveReport({ id: r.id, headline: draft.headline, summary: draft.summary, contribution: contribution || 'none', amountPaise: amount, publish, imagePath, note: note || undefined, translations });
-      if (res.earning) toast(`Credited ${paise(res.earning.amount_paise)} · ${res.earning.code}`);
+      return res.earning ? `credited ${paise(res.earning.amount_paise)} (${res.earning.code})` : 'no payment';
     }, publish ? 'Approved and published' : 'Approved');
   };
   const decide = async (status: 'correction_required' | 'on_hold' | 'rejected' | 'under_review') => {

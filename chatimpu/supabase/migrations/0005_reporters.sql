@@ -18,6 +18,30 @@
 
 create extension if not exists pgcrypto;
 
+-- ── Profiles for recycled mobile numbers
+-- profiles.phone is unique and copied from auth.users. If a number moved to a new account (numbers are
+-- recycled by carriers), the stale copy made the 0003 trigger skip the new profile silently and every
+-- reporter action then failed. Free the number from the stale profile and keep the copy in sync.
+create or replace function handle_new_user() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.phone is not null then
+    update profiles p set phone = null where p.phone = new.phone and p.id <> new.id
+      and not exists (select 1 from auth.users u where u.id = p.id and u.phone = new.phone);
+  end if;
+  insert into profiles (id, phone) values (new.id, new.phone) on conflict (id) do nothing;
+  return new;
+end $$;
+create or replace function sync_profile_phone() returns trigger language plpgsql security definer set search_path = public as $$
+begin
+  if new.phone is distinct from old.phone then
+    if new.phone is not null then update profiles set phone = null where phone = new.phone and id <> new.id; end if;
+    update profiles set phone = new.phone where id = new.id;
+  end if;
+  return new;
+end $$;
+drop trigger if exists on_auth_user_phone_changed on auth.users;
+create trigger on_auth_user_phone_changed after update of phone on auth.users for each row execute function sync_profile_phone();
+
 -- ── Permissions (finance is a permission, not a role: editors never get it implicitly)
 create table if not exists staff_permissions (
   user_id uuid not null references profiles on delete cascade,
@@ -187,6 +211,7 @@ declare r reporter_profiles; v text := (select value #>> '{}' from app_settings 
 begin
   if auth.uid() is null then raise exception 'Sign in first' using errcode = '42501'; end if;
   if not coalesce(p_accept_agreement, false) then raise exception 'Please accept the contributor agreement'; end if;
+  insert into profiles (id) values (auth.uid()) on conflict (id) do nothing;
   insert into reporter_profiles (user_id, full_name, email, district_id, mandal_id, locality, preferred_language, interests, intro, photo_path, agreement_version, agreement_accepted_at)
   values (auth.uid(), trim(p_full_name), nullif(trim(p_email), ''), p_district, nullif(p_mandal, ''), nullif(trim(p_locality), ''), coalesce(p_language, 'te'),
           coalesce(p_interests, '{}'), nullif(trim(p_intro), ''), nullif(p_photo_path, ''), v, now())

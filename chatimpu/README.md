@@ -141,6 +141,15 @@ cascade, image, schedule, breaking, push toggle, sponsored, live phone preview) 
 category and district breakdowns, retention, table view) · Ad manager (district targeting, frequency,
 CTR, revenue) · Polls · Users & roles.
 
+## Reporter ecosystem
+
+- **Contributor portal:** `/reporter` on the CMS app. It is mobile-first, in Telugu and English, and covers onboarding, ID verification, submissions with media and voice, assignments, earnings, wallet, withdrawals and help.
+- **Newsroom modules:** Editorial desk, Reporters, Assignments, Recognition, and a permission-gated Finance desk.
+- **Payouts:** RazorpayX Payouts in test or live mode, or the mock provider.
+- **Money model:** an integer-paise ledger with a configurable withdrawal threshold (₹300 by default).
+
+See **[docs/REPORTER_ECOSYSTEM.md](docs/REPORTER_ECOSYSTEM.md)** for architecture, endpoints, environment variables, the go-live checklist and compliance notes.
+
 ## Notes and known limits
 
 - Sample images come from `picsum.photos` and sample videos from Google's public test bucket; replace
