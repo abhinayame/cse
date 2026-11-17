@@ -47,8 +47,12 @@ test('submission gets a unique ID, passes automated checks and lands under revie
   const s = await submitStory(r);
   assert.equal(s.status, 'under_review');
   assert.match(s.code, /^CHT-\d{4}-\d{6}$/);
-  const hist = must(await r.db.from('editorial_reviews').select('action, to_status').eq('submission_id', s.id).order('id')) as { action: string; to_status: string }[];
+  const q = (a: Actor) => a.db.from('editorial_reviews').select('action, to_status').eq('submission_id', s.id).order('id');
+  const hist = must(await q(editor)) as { action: string; to_status: string }[];
   assert.deepEqual(hist.map((h) => h.to_status), ['submitted', 'ai_processing', 'under_review']);
+  // the reporter sees the decisions, not the internal automated-check details
+  const mine = must(await q(r)) as { action: string }[];
+  assert.deepEqual(mine.map((h) => h.action), ['submitted', 'queued_for_review']);
   // reporter cannot edit while under review, nor touch protected fields
   await fails(r.db.from('citizen_reports').update({ headline: 'changed headline that is long enough' }).eq('id', s.id).select('id').single());
   // rights consent is mandatory
@@ -62,7 +66,10 @@ test('submission gets a unique ID, passes automated checks and lands under revie
 
 test('duplicate detection flags a near-identical headline', async () => {
   const r = await activeReporter('dup', editor);
-  const tag = Math.random().toString(36).slice(2, 8); // unique per run so earlier runs' rows don't crowd the top-5 list
+  // A long random place name per run: earlier runs' near-identical rows are real duplicates of each other and would
+  // otherwise legitimately outrank this run's pair in the top-5 list.
+  const rnd = () => Math.random().toString(36).slice(2, 9);
+  const tag = `${rnd()} ${rnd()} ${rnd()}`;
   const a = await submitStory(r, { headline: `Kazipet railway gate ${tag} closed for repairs causing long traffic jams`, district_id: 'wgl', mandal_id: 'wgl-kzp' });
   const b = await submitStory(r, { headline: `Kazipet railway gate ${tag} closed for repair works causing long traffic jam`, district_id: 'wgl', mandal_id: 'wgl-kzp' });
   assert.ok(b.duplicate_candidates.some((d: { id: string }) => d.id === a.id), 'second submission lists the first as a duplicate candidate');
@@ -324,4 +331,17 @@ test('concurrent withdrawal requests cannot spend the same balance', async () =>
   assert.equal(results.filter((x) => !x.error).length, 1, 'exactly one of five simultaneous requests succeeds');
   const bal = await wallet(r);
   assert.deepEqual([bal.available_paise, bal.reserved_paise], [1000, 30000]);
+});
+
+test('legacy "reporter" staff role gets no editorial privileges over contributors', async () => {
+  const contributor = await activeReporter('legacy-target', editor);
+  const s = await submitStory(contributor);
+  const legacy = await actor('legacy-staff', { role: 'reporter' });
+  assert.equal((must(await legacy.db.from('reporter_profiles').select('user_id').eq('user_id', contributor.id)) as unknown[]).length, 0, 'cannot read contributor PII');
+  assert.equal((must(await legacy.db.from('citizen_reports').select('id').eq('id', s.id)) as unknown[]).length, 0, 'cannot read others’ submissions');
+  // own draft: protected fields stay protected even for a staff-role account
+  await service.from('profiles').update({ verified_reporter: true }).eq('id', legacy.id);
+  const d = must(await legacy.db.from('citizen_reports').insert({ headline: 'Legacy staff draft headline', body: 'x'.repeat(50), lang: 'en', category_id: 'education', district_id: 'hyd', status: 'published', is_sensitive: false, human_verified: true }).select('status, human_verified').single()) as { status: string; human_verified: boolean };
+  assert.equal(d.status, 'draft');
+  assert.equal(d.human_verified, false);
 });

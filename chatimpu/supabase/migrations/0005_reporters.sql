@@ -396,7 +396,8 @@ $$;
 
 -- BEFORE trigger: guards fields reporters may not touch, runs the submission pipeline.
 create or replace function citizen_reports_before() returns trigger language plpgsql security definer set search_path = public as $$
-declare staff boolean := is_staff(); n_today int;
+-- Only editorial staff for this district bypass the reporter guards (the legacy 'reporter' staff role does not).
+declare staff boolean := moderates(new.district_id); n_today int;
 begin
   new.updated_at := now();
   if tg_op = 'UPDATE' and not staff and auth.uid() is not null then
@@ -1328,12 +1329,12 @@ drop policy if exists mark_read on notifications;
 create policy mark_read on notifications for update using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 drop policy if exists reporter_read on reporter_profiles;
-create policy reporter_read on reporter_profiles for select using (user_id = auth.uid() or is_staff() or has_permission('finance'));
+create policy reporter_read on reporter_profiles for select using (user_id = auth.uid() or my_role() in ('super_admin', 'editor', 'district_moderator') or has_permission('finance') or has_permission('reporter_admin'));
 drop policy if exists reporter_self_update on reporter_profiles;
 create policy reporter_self_update on reporter_profiles for update using (false);  -- changes go through register_reporter / review_reporter
 
 drop policy if exists areas_read on reporter_areas;
-create policy areas_read on reporter_areas for select using (user_id = auth.uid() or is_staff());
+create policy areas_read on reporter_areas for select using (user_id = auth.uid() or my_role() in ('super_admin', 'editor', 'district_moderator') or has_permission('reporter_admin'));
 
 drop policy if exists verif_read on reporter_verifications;
 create policy verif_read on reporter_verifications for select using (user_id = auth.uid() or my_role() in ('super_admin', 'editor') or has_permission('reporter_admin')
@@ -1361,7 +1362,10 @@ drop policy if exists media_delete on submission_media;
 create policy media_delete on submission_media for delete using (exists (select 1 from citizen_reports c where c.id = submission_id and c.reporter_id = auth.uid() and c.status in ('draft', 'correction_required')));
 
 drop policy if exists reviews_read on editorial_reviews;
-create policy reviews_read on editorial_reviews for select using (exists (select 1 from citizen_reports c where c.id = submission_id and (c.reporter_id = auth.uid() or moderates(c.district_id))));
+-- Reporters see the decisions on their own work, never editors' internal verification notes,
+-- automated sensitivity flags or edit diffs; editors in the district see everything.
+create policy reviews_read on editorial_reviews for select using (exists (select 1 from citizen_reports c where c.id = submission_id and (moderates(c.district_id)
+  or (c.reporter_id = auth.uid() and action in ('submitted', 'queued_for_review', 'request_correction', 'hold', 'reject', 'reopen', 'approve', 'publish')))));
 
 drop policy if exists rates_read on contribution_rates;
 create policy rates_read on contribution_rates for select using (true);
@@ -1435,7 +1439,7 @@ create policy "reporter uploads submission media" on storage.objects for insert 
   and exists (select 1 from public.reporter_profiles where user_id = auth.uid() and status not in ('suspended', 'rejected')));
 drop policy if exists "read submission media" on storage.objects;
 create policy "read submission media" on storage.objects for select using (
-  bucket_id = 'submissions' and ((storage.foldername(name))[1] = auth.uid()::text or public.is_staff()));
+  bucket_id = 'submissions' and ((storage.foldername(name))[1] = auth.uid()::text or public.my_role() in ('super_admin', 'editor', 'district_moderator')));
 drop policy if exists "reporter deletes own draft media" on storage.objects;
 create policy "reporter deletes own draft media" on storage.objects for delete using (bucket_id = 'submissions' and (storage.foldername(name))[1] = auth.uid()::text);
 drop policy if exists "reporter uploads id document" on storage.objects;
