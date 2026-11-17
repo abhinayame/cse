@@ -641,6 +641,13 @@ begin
   if new.assigned_reporter_id is not null and (tg_op = 'INSERT' or old.assigned_reporter_id is distinct from new.assigned_reporter_id) then
     perform notify(new.assigned_reporter_id, 'assignment', 'New assignment: ' || new.title, 'కొత్త అసైన్‌మెంట్: ' || new.title,
       coalesce('Deadline ' || to_char(new.deadline at time zone 'Asia/Kolkata', 'DD Mon, HH12:MI AM'), null), null, '/reporter/assignments');
+  elsif tg_op = 'INSERT' and new.assigned_reporter_id is null and new.status = 'open' then
+    -- Open assignment: tell every active reporter covering that district.
+    insert into notifications (user_id, kind, title_en, title_te, body_en, link)
+    select distinct ra.user_id, 'assignment', 'Open assignment near you: ' || new.title, 'మీ ప్రాంతంలో అసైన్‌మెంట్: ' || new.title,
+           coalesce('Deadline ' || to_char(new.deadline at time zone 'Asia/Kolkata', 'DD Mon, HH12:MI AM'), null), '/reporter/assignments'
+    from reporter_areas ra join reporter_profiles rp on rp.user_id = ra.user_id
+    where ra.district_id = new.district_id and rp.status = 'active';
   end if;
   return null;
 end $$;
@@ -703,6 +710,12 @@ begin
   select * into c from citizen_reports where id = p_id for update;
   if c.id is null then raise exception 'Submission not found'; end if;
   perform require_editor(c.district_id);
+  if c.status in ('published', 'rejected') and (p_patch ?| array['headline', 'body', 'summary', 'category_id']) then
+    raise exception 'A % submission can no longer be edited here; edit the published story instead', c.status;
+  end if;
+  if c.is_sensitive and (p_patch->>'is_sensitive')::boolean is false and coalesce(trim(p_patch->>'verification_notes'), '') = '' then
+    raise exception 'Explain why this story is not sensitive before clearing the flag';
+  end if;
   update citizen_reports set
     headline = coalesce(p_patch->>'headline', headline),
     body = coalesce(p_patch->>'body', body),
@@ -837,6 +850,9 @@ declare m payout_methods;
 begin
   if not has_permission('finance') then raise exception 'Finance permission required' using errcode = '42501'; end if;
   if p_status not in ('verified', 'failed') then raise exception 'Status must be verified or failed'; end if;
+  select * into m from payout_methods where id = p_id for update;
+  if m.id is null then raise exception 'Payment method not found'; end if;
+  if m.reporter_id = auth.uid() then raise exception 'You cannot verify your own payment method'; end if;
   update payout_methods set verification_status = p_status, verification_note = p_note, verified_by = auth.uid(), verified_at = now() where id = p_id returning * into m;
   perform audit('payout_method_' || p_status, 'payout_methods', p_id::text, jsonb_build_object('note', p_note));
   perform notify(m.reporter_id, 'payout_method', case when p_status = 'verified' then 'Payment method verified' else 'Payment method could not be verified' end,
@@ -1436,7 +1452,9 @@ end $$;
 drop policy if exists "reporter uploads submission media" on storage.objects;
 create policy "reporter uploads submission media" on storage.objects for insert with check (
   bucket_id = 'submissions' and (storage.foldername(name))[1] = auth.uid()::text
-  and exists (select 1 from public.reporter_profiles where user_id = auth.uid() and status not in ('suspended', 'rejected')));
+  and (exists (select 1 from public.reporter_profiles where user_id = auth.uid() and status not in ('suspended', 'rejected'))
+       or exists (select 1 from public.profiles p where p.id = auth.uid() and p.verified_reporter
+                  and not exists (select 1 from public.reporter_profiles r where r.user_id = auth.uid()))));
 drop policy if exists "read submission media" on storage.objects;
 create policy "read submission media" on storage.objects for select using (
   bucket_id = 'submissions' and ((storage.foldername(name))[1] = auth.uid()::text or public.my_role() in ('super_admin', 'editor', 'district_moderator')));

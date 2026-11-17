@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { listSubmissions, type Submission } from '../api';
 import { rupees, useLang, useT } from '../i18n';
 import { useReporter } from '../ReporterApp';
-import { ReporterStatus, SubmissionStatus, fmtDate } from '../ui';
+import { ReporterStatus, SubmissionStatus, badgeIcon, fmtDate } from '../ui';
 
 export default function Home() {
   const t = useT(); const lang = useLang();
@@ -72,7 +72,7 @@ export default function Home() {
         <div className="rp-section-head"><h2>{t('rank')}</h2><b style={{ fontSize: 22 }}>{dash.rank ? `#${dash.rank}` : '—'}</b></div>
         <div className="rp-label" style={{ marginBottom: 8 }}>{t('badges')}</div>
         {dash.badges.length ? (
-          <div className="rp-chips">{dash.badges.map((b) => <span key={b.code + b.period} className="rp-badge">{b.icon} {lang === 'te' ? b.name_te : b.name_en}</span>)}</div>
+          <div className="rp-chips">{dash.badges.map((b) => <span key={b.code + b.period} className="rp-badge">{badgeIcon(b.icon)} {lang === 'te' ? b.name_te : b.name_en}</span>)}</div>
         ) : <p className="rp-meta">{t('noBadges')}</p>}
       </section>
 

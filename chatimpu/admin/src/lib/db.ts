@@ -28,13 +28,18 @@ export async function loadSession(userId: string): Promise<Session & { userId: s
   if (error) throw new Error(error.message);
   const role = (profile?.role ?? 'reader') as Role | 'reader';
   const districts = role === 'reader' ? [] : check(await db().from('moderator_districts').select('district_id').eq('user_id', userId)).map((r) => r.district_id as string);
+  const granted = check(await db().from('staff_permissions').select('permission').eq('user_id', userId)).map((r) => r.permission as string);
+  const permissions = role === 'super_admin' ? ['finance', 'reporter_admin'] : granted;
   return {
     userId,
     name: profile?.display_name || (profile?.phone ? `+${profile.phone}` : 'Staff'),
     role: (role === 'reader' ? 'reporter' : role) as Role,
     // Super admins and editors work across all districts.
     districts: role === 'district_moderator' || role === 'reporter' ? districts : [],
-    isStaff: role !== 'reader',
+    permissions,
+    staffRole: role !== 'reader',
+    // Finance-only accounts (no newsroom role) may enter the CMS to reach the finance desk.
+    isStaff: role !== 'reader' || permissions.length > 0,
   };
 }
 
@@ -118,17 +123,20 @@ export async function deleteStory(id: string) {
 // ── Citizen reports ───────────────────────────────────────────────────────────
 interface ReportRow {
   id: string; headline: string; body: string; lang: ContentLang; category_id: CategoryId; district_id: string; mandal_id: string | null;
-  media: string[]; status: CitizenSubmission['status']; ai_flags: string[]; submitted_at: string;
+  media: string[]; status: string; ai_flags: string[]; submitted_at: string;
   reporter: { display_name: string | null; phone: string | null; verified_reporter: boolean } | null;
 }
 
 export async function loadSubmissions(): Promise<CitizenSubmission[]> {
   const rows = check(await db().from('citizen_reports')
     .select('id, headline, body, lang, category_id, district_id, mandal_id, media, status, ai_flags, submitted_at, reporter:profiles!citizen_reports_reporter_id_fkey(display_name, phone, verified_reporter)')
+    .not('status', 'in', '(draft,correction_required)')
     .order('submitted_at', { ascending: false }).limit(300)) as unknown as ReportRow[];
+  // The editorial workflow (0005) has more states than the legacy queue; fold them for the dashboard/badge.
+  const legacy = (s: string): CitizenSubmission['status'] => (s === 'approved' || s === 'published' ? 'approved' : s === 'rejected' ? 'rejected' : 'pending');
   return rows.map((r) => ({
     id: r.id, headline: r.headline, body: r.body, lang: r.lang, category: r.category_id, districtId: r.district_id, mandalId: r.mandal_id ?? '',
-    media: (r.media ?? []).map(mediaUrl), status: r.status, aiFlags: r.ai_flags ?? [], submittedAt: r.submitted_at,
+    media: (r.media ?? []).map(mediaUrl), status: legacy(r.status), aiFlags: r.ai_flags ?? [], submittedAt: r.submitted_at,
     reporterName: r.reporter?.display_name || 'Citizen reporter',
     reporterPhone: r.reporter?.phone ? `+${r.reporter.phone.slice(0, 7)}xxxxx` : '',
     verified: !!r.reporter?.verified_reporter,
@@ -142,7 +150,8 @@ export async function approveSubmission(id: string, headline: string, summary: s
 }
 
 export async function rejectSubmission(id: string, userId: string, note?: string) {
-  check(await db().from('citizen_reports').update({ status: 'rejected', reviewer_id: userId, reviewed_at: new Date().toISOString(), review_note: note ?? null }).eq('id', id));
+  void userId; // the reviewer is recorded server-side from the session
+  check(await db().rpc('editorial_set_status', { p_id: id, p_status: 'rejected', p_note: note?.trim() || 'Not suitable for publication' }));
 }
 
 // ── Ads ───────────────────────────────────────────────────────────────────────

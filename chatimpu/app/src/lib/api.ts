@@ -117,22 +117,37 @@ export async function verifyOtp(phone: string, token: string) {
 // ── Citizen reporter ────────────────────────────────────────────
 export type NewSubmission = Omit<CitizenSubmission, 'id' | 'submittedAt' | 'status' | 'verified' | 'reporterName' | 'reporterPhone'>;
 
-export async function submitCitizenReport(s: NewSubmission): Promise<{ id: string }> {
+/**
+ * Contributor workflow (supabase/migrations/0005_reporters.sql): create a draft, upload originals to the
+ * PRIVATE `submissions` bucket (never public), attach them, then submit. The server assigns the
+ * CHT-… code, runs sensitivity / duplicate checks and queues it for editors.
+ */
+export async function submitCitizenReport(s: NewSubmission & { rightsConfirmed: boolean }): Promise<{ id: string; code?: string }> {
   if (supabase) {
-    const media: string[] = [];
-    for (const uri of s.media) {
-      const blob = await (await fetch(uri)).blob();
-      const path = `citizen/${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      const { error } = await supabase.storage.from('media').upload(path, blob);
-      if (error) throw error;
-      media.push(path);
-    }
-    const { data, error } = await supabase.from('citizen_reports').insert({
+    if (!s.rightsConfirmed) throw new Error('Please confirm you captured this material and consent to publication.');
+    const { data: auth } = await supabase.auth.getUser();
+    const uid = auth.user?.id;
+    if (!uid) throw new Error('Please sign in again.');
+    const { data: draft, error } = await supabase.from('citizen_reports').insert({
       headline: s.headline, body: s.body, lang: s.lang, category_id: s.category,
-      district_id: s.districtId, mandal_id: s.mandalId, media,
+      district_id: s.districtId, mandal_id: s.mandalId, status: 'draft', rights_confirmed: true,
+      submission_type: s.media.length ? 'photo_story' : 'text_news',
     }).select('id').single();
     if (error) throw error;
-    return data as { id: string };
+    for (const uri of s.media) {
+      const blob = await (await fetch(uri)).blob();
+      const ext = blob.type.includes('video') ? 'mp4' : blob.type.includes('png') ? 'png' : 'jpg';
+      const path = `${uid}/${draft.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const up = await supabase.storage.from('submissions').upload(path, blob, { contentType: blob.type || 'image/jpeg' });
+      if (up.error) throw up.error;
+      const row = await supabase.from('submission_media').insert({
+        submission_id: draft.id, kind: blob.type.startsWith('video') ? 'video' : 'photo', bucket: 'submissions', storage_path: path, mime_type: blob.type || null, size_bytes: blob.size,
+      });
+      if (row.error) throw row.error;
+    }
+    const sent = await supabase.from('citizen_reports').update({ status: 'submitted' }).eq('id', draft.id).select('id, code').single();
+    if (sent.error) throw sent.error;
+    return sent.data as { id: string; code: string };
   }
   await delay(900);
   return { id: `sub-${Date.now()}` };

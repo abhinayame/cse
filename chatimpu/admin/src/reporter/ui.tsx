@@ -32,5 +32,9 @@ export function ErrorNote({ error }: { error: string | null }) {
   return error ? <div className="rp-banner bad" role="alert" style={{ marginBottom: 12 }}>{error}</div> : null;
 }
 
+/** Badge icons are stored as names in contributor_badges. */
+export const BADGE_ICON: Record<string, string> = { trophy: '🏆', check: '🎯', video: '🎥', megaphone: '📣', calendar: '📅', building: '🏛️' };
+export const badgeIcon = (name: string | null | undefined) => BADGE_ICON[name ?? ''] ?? '🏅';
+
 export const fmtDate = (iso: string | null, lang: string) =>
   iso ? new Date(iso).toLocaleString(lang === 'te' ? 'te-IN' : 'en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '';

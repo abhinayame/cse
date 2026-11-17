@@ -25,7 +25,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     try {
       const s = await loadSession(auth.user.id);
       if (!s.isStaff) return setState({ kind: 'noAccess', phone: auth.user.phone, email: auth.user.email });
-      setState({ kind: 'ready', session: { name: s.name, role: s.role, districts: s.districts, userId: s.userId } });
+      setState({ kind: 'ready', session: { name: s.name, role: s.role, districts: s.districts, userId: s.userId, permissions: s.permissions, staffRole: s.staffRole } });
     } catch (e) {
       setState({ kind: 'error', message: (e as Error).message });
     }

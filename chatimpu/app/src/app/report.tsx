@@ -1,9 +1,10 @@
 /**
  * Citizen Reporter: verified users submit news with photos/videos, location and category.
- * Submissions land in `citizen_reports` with status = 'pending' → CMS moderation queue.
+ * Submissions follow the contributor workflow (draft → submitted → automated checks → under review) and
+ * appear on the CMS editorial desk. Contributors can track them in the reporter portal (/reporter).
  */
 import { useState } from 'react';
-import { ScrollView, TextInput, View } from 'react-native';
+import { Linking, ScrollView, Switch, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
@@ -32,6 +33,9 @@ export default function Report() {
   const [media, setMedia] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
+  const [rights, setRights] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const [code, setCode] = useState<string | undefined>();
 
   const pickMedia = async () => {
     const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ['images', 'videos'], allowsMultipleSelection: true, selectionLimit: 4, quality: 0.8 });
@@ -44,13 +48,15 @@ export default function Report() {
     if (!r.canceled) setMedia([...media, r.assets[0].uri].slice(0, 4));
   };
   const words = wordCount(body || ' ') - (body ? 0 : 1);
-  const valid = headline.trim().length > 10 && words >= 30 && category;
+  const valid = headline.trim().length > 10 && words >= 30 && category && rights;
   const submit = async () => {
     if (!valid) return;
-    setBusy(true);
+    setBusy(true); setErr(null);
     try {
-      await submitCitizenReport({ headline, body, category: category!, lang: p.language as ContentLang, districtId: p.districtId, mandalId: p.mandalId, media });
-      haptic.success(); setDone(true);
+      const r = await submitCitizenReport({ headline, body, category: category!, lang: p.language as ContentLang, districtId: p.districtId, mandalId: p.mandalId, media, rightsConfirmed: rights });
+      setCode(r.code); haptic.success(); setDone(true);
+    } catch (e) {
+      setErr((e as Error).message || 'Could not submit. Please try again.');
     } finally { setBusy(false); }
   };
 
@@ -64,7 +70,7 @@ export default function Report() {
       </View>
       {done ? (
         <Animated.View entering={ZoomIn.springify()} style={{ flex: 1, justifyContent: 'center', padding: 20, gap: 20 }}>
-          <EmptyState title="✓" sub={tr('submitted')} />
+          <EmptyState title="✓" sub={code ? `${tr('submitted')} · ${code}` : tr('submitted')} />
           <Button label={tr('done')} onPress={() => router.back()} />
         </Animated.View>
       ) : !p.user?.verified ? (
@@ -105,8 +111,18 @@ export default function Report() {
               </>
             )}
           </View>
+          <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
+            <Switch value={rights} onValueChange={setRights} accessibilityLabel={tr('rightsConsent')} trackColor={{ true: t.colors.accent, false: t.colors.border }} />
+            <Txt v="bodySm" style={{ flex: 1 }}>{tr('rightsConsent')}</Txt>
+          </View>
+          {err && <Txt v="bodySm" color={t.colors.breakingText} accessibilityRole="alert">{err}</Txt>}
           <Button label={tr('submit')} icon="send" disabled={!valid} loading={busy} onPress={submit} style={{ marginTop: 8 }} />
-          <Txt v="caption" muted align="center">Submissions are reviewed by a district moderator before publishing. Do not share content you did not capture yourself.</Txt>
+          <Txt v="caption" muted align="center">Submissions are reviewed by an editor before publishing. Do not share content you did not capture yourself.</Txt>
+          {!!process.env.EXPO_PUBLIC_REPORTER_PORTAL_URL && (
+            <Tap onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_REPORTER_PORTAL_URL!)} accessibilityRole="link">
+              <Txt v="label" color={t.colors.accentText} align="center">{tr('reporterPortal')} →</Txt>
+            </Tap>
+          )}
         </ScrollView>
       )}
     </View>

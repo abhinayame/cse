@@ -30,7 +30,13 @@ const DEMO_USERS: CmsUser[] = [
   { id: 'u7', name: 'Mahesh Goud', phone: '98480 77889', role: 'reader', districts: [], verifiedReporter: false, joined: '2025-09-30' },
 ];
 
-export interface Session { name: string; role: Role; districts: string[]; userId?: string }
+export interface Session {
+  name: string; role: Role; districts: string[]; userId?: string;
+  /** staff_permissions: 'finance', 'reporter_admin' (super admins implicitly have all) */
+  permissions?: string[];
+  /** false for finance-only accounts that have no newsroom role */
+  staffRole?: boolean;
+}
 
 interface Ctx {
   live: boolean;

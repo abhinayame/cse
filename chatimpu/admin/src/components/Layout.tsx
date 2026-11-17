@@ -1,13 +1,18 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useStore } from '../lib/store';
-import { CAN, ROLE_LABEL, type Section } from '../lib/roles';
+import { ROLE_LABEL, sectionsFor, type Section } from '../lib/roles';
 import { isDemo } from '../lib/supabase';
 import type { Role } from '@data/types';
 
-const NAV: { to: string; section: Section; label: string; icon: string }[] = [
+const NAV: { to: string; section: Section; label: string; icon: string; mode?: 'live' | 'demo' }[] = [
   { to: '/', section: 'dashboard', label: 'Dashboard', icon: '◎' },
   { to: '/stories', section: 'stories', label: 'Stories', icon: '▤' },
-  { to: '/moderation', section: 'moderation', label: 'Moderation', icon: '✓' },
+  { to: '/moderation', section: 'moderation', label: 'Moderation', icon: '✓', mode: 'demo' },
+  { to: '/editorial', section: 'editorial', label: 'Editorial desk', icon: '✓', mode: 'live' },
+  { to: '/reporters', section: 'reporters', label: 'Reporters', icon: '✎' },
+  { to: '/assignments', section: 'assignments', label: 'Assignments', icon: '⌖' },
+  { to: '/recognition', section: 'recognition', label: 'Recognition', icon: '★' },
+  { to: '/finance', section: 'finance', label: 'Finance', icon: '₹' },
   { to: '/analytics', section: 'analytics', label: 'Analytics', icon: '↗' },
   { to: '/ads', section: 'ads', label: 'Ad manager', icon: '◆' },
   { to: '/polls', section: 'polls', label: 'Polls', icon: '▥' },
@@ -29,16 +34,16 @@ export function Layout() {
       <aside className="sidebar">
         <div className="brand"><span className="mono">చా</span><div>Chatimpu<small>Newsroom</small></div></div>
         <nav className="nav">
-          {NAV.filter((n) => CAN[session.role].includes(n.section)).map((n) => (
+          {NAV.filter((n) => sectionsFor(session).includes(n.section) && (!n.mode || (n.mode === 'live') === live)).map((n) => (
             <NavLink key={n.to} to={n.to} end={n.to === '/'}>
               <span aria-hidden style={{ width: 18, textAlign: 'center' }}>{n.icon}</span>{n.label}
-              {n.section === 'moderation' && pending > 0 && <span className="badge">{pending}</span>}
+              {(n.section === 'moderation' || n.section === 'editorial') && pending > 0 && <span className="badge">{pending}</span>}
             </NavLink>
           ))}
         </nav>
         <div className="foot">
           <div style={{ color: '#F7F3EA', fontWeight: 600 }}>{session.name}</div>
-          <div>{ROLE_LABEL[session.role]}{session.districts.length ? ` · ${session.districts.join(', ').toUpperCase()}` : ''}</div>
+          <div>{session.staffRole === false ? 'Finance' : ROLE_LABEL[session.role]}{session.staffRole !== false && session.permissions?.includes('finance') && session.role !== 'super_admin' ? ' · Finance' : ''}{session.districts.length ? ` · ${session.districts.join(', ').toUpperCase()}` : ''}</div>
           {live && (
             <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
               <span style={{ fontSize: 11.5 }}><span className="live-dot" />Live data</span>

@@ -97,6 +97,8 @@ const en = {
   submit: 'Submit for review',
   submitted: 'Submitted! Our district moderator will review it shortly.',
   verifiedOnly: 'Only verified reporters can submit. Sign in to get verified.',
+  rightsConsent: 'I captured this myself (or have permission), it is accurate as far as I know, and Chatimpu may edit and publish it with credit to me.',
+  reporterPortal: 'Track submissions & earnings in the reporter portal',
   searchPlaceholder: 'Search news, places, topics',
   filters: 'Filters',
   any: 'Any',
