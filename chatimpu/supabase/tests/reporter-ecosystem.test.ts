@@ -291,8 +291,19 @@ test('financial data and secrets are protected', async () => {
 test('recognition: quality-weighted leaderboard and badges (bonus needs finance)', async () => {
   const r = await activeReporter('star', editor);
   for (let i = 0; i < 3; i++) { const s = await submitStory(r); await approve(editor, s.id, 'text_news', 500); }
-  const board = must(await r.db.rpc('leaderboard')) as { name: string; score: number }[];
-  assert.ok(board.some((b) => b.name === 'Reporter star' && b.score > 0));
+  // quality beats volume: 4 approved + 4 rejected scores below 3 approved + 0 rejected
+  const spam = await activeReporter('volume', editor);
+  for (let i = 0; i < 8; i++) {
+    const s = await submitStory(spam);
+    if (i < 4) await approve(editor, s.id, 'text_news', 500);
+    else must(await editor.db.rpc('editorial_set_status', { p_id: s.id, p_status: 'rejected', p_note: 'Unverifiable' }));
+  }
+  const scores = must(await r.db.rpc('reporter_scores')) as { reporter_id: string; score: number; accuracy: number }[];
+  const star = scores.find((x) => x.reporter_id === r.id)!, vol = scores.find((x) => x.reporter_id === spam.id)!;
+  assert.equal(star.accuracy, 1);
+  assert.equal(vol.accuracy, 0.5);
+  assert.ok(star.score > vol.score, `quality (${star.score}) should outrank volume (${vol.score})`);
+  assert.ok((must(await r.db.rpc('leaderboard')) as unknown[]).length > 0);
   await fails(editor.db.rpc('award_badge', { p_reporter: r.id, p_badge: 'community_voice', p_period: null, p_reason: 'x', p_bonus_paise: 5000 }), /finance/);
   must(await editor.db.rpc('award_badge', { p_reporter: r.id, p_badge: 'community_voice', p_period: null, p_reason: 'Drainage series' }));
   must(await admin.db.rpc('award_badge', { p_reporter: r.id, p_badge: 'best_reporter_month', p_period: null, p_reason: 'Top score', p_bonus_paise: 10000 }));

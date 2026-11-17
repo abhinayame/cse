@@ -377,18 +377,21 @@ begin
 end $$;
 
 create or replace function find_duplicates(p_id uuid, p_headline text, p_district text) returns jsonb language sql stable security definer set search_path = public as $$
-  select coalesce(jsonb_agg(d order by (d->>'score')::numeric desc), '[]') from (
-    select jsonb_build_object('type', 'submission', 'id', c.id, 'code', c.code, 'headline', c.headline, 'score', round(similarity(lower(c.headline), lower(p_headline))::numeric, 2)) d
-      from citizen_reports c
-      where c.id <> p_id and c.status not in ('draft', 'rejected') and c.district_id = p_district
-        and coalesce(c.submitted_at, c.created_at) > now() - interval '7 days'
-        and similarity(lower(c.headline), lower(p_headline)) > 0.35
-    union all
-    select jsonb_build_object('type', 'story', 'id', s.id, 'headline', t.headline, 'score', round(similarity(lower(t.headline), lower(p_headline))::numeric, 2))
-      from stories s join story_translations t on t.story_id = s.id
-      where s.district_id = p_district and s.published_at > now() - interval '7 days'
-        and similarity(lower(t.headline), lower(p_headline)) > 0.35
-    order by 1 limit 5) x
+  select coalesce(jsonb_agg(d order by sc desc), '[]') from (
+    select d, sc from (
+      select jsonb_build_object('type', 'submission', 'id', c.id, 'code', c.code, 'headline', c.headline, 'score', round(similarity(lower(c.headline), lower(p_headline))::numeric, 2)) d,
+             similarity(lower(c.headline), lower(p_headline)) sc
+        from citizen_reports c
+        where c.id <> p_id and c.status not in ('draft', 'rejected') and c.district_id = p_district
+          and coalesce(c.submitted_at, c.created_at) > now() - interval '7 days'
+          and similarity(lower(c.headline), lower(p_headline)) > 0.35
+      union all
+      select jsonb_build_object('type', 'story', 'id', s.id, 'headline', t.headline, 'score', round(similarity(lower(t.headline), lower(p_headline))::numeric, 2)),
+             similarity(lower(t.headline), lower(p_headline))
+        from stories s join story_translations t on t.story_id = s.id
+        where s.district_id = p_district and s.published_at > now() - interval '7 days'
+          and similarity(lower(t.headline), lower(p_headline)) > 0.35) u
+    order by sc desc limit 5) x
 $$;
 
 -- BEFORE trigger: guards fields reporters may not touch, runs the submission pipeline.

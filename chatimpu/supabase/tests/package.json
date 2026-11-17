@@ -4,10 +4,13 @@
   "type": "module",
   "description": "Integration tests for the Supabase backend (RLS, editorial workflow, ledger, withdrawals, payouts). Run against a local stack: `supabase start`, then set SUPABASE_URL / SUPABASE_ANON_KEY / SUPABASE_SERVICE_ROLE_KEY.",
   "scripts": {
-    "test": "node --test --test-concurrency=1 --import tsx ./*.test.ts"
+    "test": "node --test --test-concurrency=1 --import tsx ./*.test.ts",
+    "typecheck": "tsc -p ."
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.119.0",
-    "tsx": "^4.20.0"
+    "@types/node": "^22.20.5",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.3"
   }
 }

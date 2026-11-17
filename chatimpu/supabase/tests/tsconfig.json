@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "lib": [
+      "ES2022",
+      "DOM"
+    ],
+    "paths": {
+      "@supabase/supabase-js": [
+        "./node_modules/@supabase/supabase-js"
+      ]
+    }
+  },
+  "include": [
+    "./*.ts",
+    "../functions/_shared/payouts/*.ts"
+  ]
+}
