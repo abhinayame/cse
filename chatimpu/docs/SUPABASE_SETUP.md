@@ -27,7 +27,7 @@ Also note the **project ref** — the `xxxx` part of the URL.
 
 ## 3. Create the database (dashboard → SQL Editor)
 
-Open **SQL Editor → New query**. Run these six files **in this order**: open each file from the
+Open **SQL Editor → New query**. Run these seven files **in this order**: open each file from the
 repo, paste the whole contents, click **Run**, wait for "Success", then do the next.
 
 1. `chatimpu/supabase/migrations/0001_schema.sql` — tables (turns on PostGIS and pg_trgm)
@@ -37,7 +37,9 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
 5. `chatimpu/supabase/migrations/0005_reporters.sql` — reporter ecosystem: contributor onboarding, editorial workflow,
    earnings ledger, withdrawals and payouts, assignments, badges, notifications, private `submissions` and
    `reporter-private` storage buckets (see [REPORTER_ECOSYSTEM.md](REPORTER_ECOSYSTEM.md)). Safe to run again.
-6. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
+6. `chatimpu/supabase/migrations/0006_jobs.sql` — scheduled jobs: push delivery for account notifications, the
+   data-retention sweep, and device-token linking. Safe to run again.
+7. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
 
 > **Run each file in its own query, and only once.** Click **+ New query** for every file — don't paste
 > several files into one query, and don't press Run twice. A file that has already run fails the second time
@@ -48,7 +50,7 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
 > yet, and changes nothing. Then run only the ❌ files, in order.
 >
 > **Want a clean start?** On a new project only, run `chatimpu/supabase/reset.sql` (it deletes every Chatimpu
-> table and the sample data), then run the six files again from the top.
+> table and the sample data), then run the seven files again from the top.
 
 Check it worked: **Table Editor → stories** should show 24 rows. Then in SQL Editor run:
 
@@ -106,16 +108,39 @@ Make a reader a **verified Citizen Reporter** (allowed to submit stories):
 update profiles set verified_reporter = true where phone = '91XXXXXXXXXX';
 ```
 
-## 6. Scheduled publishing (dashboard)
+## 6. Scheduled jobs: publishing, push delivery, data retention (dashboard)
 
-1. **Database → Extensions** → enable **pg_cron**.
-2. SQL Editor:
+1. **Database → Extensions** → enable **pg_cron** and **pg_net**.
+2. Deploy the two job functions and set a cron secret (terminal — see step 7b for the other functions):
 
-```sql
-select cron.schedule('publish-scheduled', '* * * * *', $$select publish_due()$$);
+```bash
+supabase secrets set CRON_SECRET="$(openssl rand -hex 24)"    # note the value
+supabase functions deploy notify-dispatch --no-verify-jwt      # protected by CRON_SECRET instead
+supabase functions deploy maintenance --no-verify-jwt
 ```
 
-Stories saved with status `scheduled` now go live at their `publish_at` time.
+3. SQL Editor (once; run it again whenever the URL or secret changes):
+
+```sql
+select setup_scheduled_jobs('https://<project-ref>.supabase.co', '<the CRON_SECRET value>');
+```
+
+This creates three jobs (the secret is kept in Supabase **Vault**):
+
+| Job | When | What |
+|---|---|---|
+| `chatimpu-publish-due` | every minute | publishes stories saved as *scheduled* |
+| `chatimpu-notify-dispatch` | every minute | sends account notifications (earnings, payouts, editor decisions…) as push |
+| `chatimpu-maintenance` | daily 02:30 IST | data retention (below) |
+
+Check them under **Database → Cron Jobs**. If you created `publish-scheduled` with an older version of this guide, it is replaced.
+
+**Data retention** (days are settings in `app_settings`, change them with the CMS or SQL):
+ID-document images are deleted 30 days after the decision (the decision and last 4 characters are kept);
+drafts untouched for 90 days are deleted after a 7-day warning to the reporter; read notifications go after
+180 days (unread after 360); raw payment-webhook bodies are cleared after 180 days. Earnings, the ledger,
+withdrawals, payment records, tax records and the audit log are **never** deleted by these jobs. Have a
+lawyer confirm the periods (DPDP Act 2023, Income-tax record-keeping).
 
 ## 7. AI assist and push notifications — Edge Functions (terminal)
 
@@ -148,7 +173,10 @@ supabase functions deploy payout-methods
 supabase functions deploy payouts
 supabase functions deploy razorpayx-webhook --no-verify-jwt
 supabase functions deploy notify-dispatch --no-verify-jwt
+supabase functions deploy maintenance --no-verify-jwt
 ```
+
+Then schedule them — step 6.
 
 - **Back up `PAYOUT_ENCRYPTION_KEY`** in a password manager. Without it, stored bank and UPI details can't be decrypted.
 - `PAYOUT_PROVIDER=mock` moves no money. Use it until RazorpayX is set up. Finance can still pay through the bank and record the UTR.

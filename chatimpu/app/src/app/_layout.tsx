@@ -10,7 +10,7 @@ import { latinFonts } from '@/theme/fonts';
 import { useTheme } from '@/theme';
 import { usePrefs } from '@/store/prefs';
 import { useLanguageFonts } from '@/hooks/useLanguageFonts';
-import { registerForPush } from '@/lib/notifications';
+import { initNotificationRouting, registerForPush } from '@/lib/notifications';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -26,7 +26,7 @@ export default function RootLayout() {
     if (ready) SplashScreen.hideAsync().catch(() => {});
   }, [ready]);
 
-  useEffect(() => { registerForPush().catch(() => {}); }, []);
+  useEffect(() => { registerForPush().catch(() => {}); return initNotificationRouting(); }, []);
 
   if (!ready) return <View style={{ flex: 1, backgroundColor: '#0A0A0A' }} />;
 

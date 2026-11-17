@@ -241,7 +241,9 @@ supabase functions deploy notify-dispatch --no-verify-jwt     # protected by CRO
 The `notifications` table holds in-app notifications in Telugu and English, shown on the portal's bell and its Notifications screen.
 
 - **Events covered:** registration, verification, submission received, under review, correction, rejection, approval, publication, earnings credited, withdrawal eligibility, withdrawal requested / approved / rejected, payment completed, payment failed and restored, payment-method verification, new assignment (assigned, or open in your district) and badges.
-- **Push delivery:** `notify-dispatch` reuses the reader app's `push_tokens` and Expo push. Schedule it every minute with pg_cron + pg_net, or with an external cron that sends `x-cron-secret`.
+- **Push delivery:** `notify-dispatch` (every minute, set up by `setup_scheduled_jobs()` in `0006_jobs.sql`) claims undelivered notifications atomically, so overlapping runs never double-send. It pushes them through Expo in the device's language, with a deep link (`chatimpu://reporter/…`) that opens the matching screen in the app, and removes device tokens Expo reports as unregistered.
+- **Device tokens:** `register_push_token()` links a device to whoever is signed in on it, so account notifications follow a phone across sign-ins.
+- **Data retention:** the daily `maintenance` job (see SUPABASE_SETUP §6). It deletes decided ID-document images, stale drafts (after warning the reporter), old notifications and raw webhook bodies. Financial, tax and audit records are never deleted.
 
 ## 10. Recognition
 
