@@ -150,6 +150,7 @@ CTR, revenue) · Polls · Users & roles.
 
 ## Reporter ecosystem
 
+- **Reporter hub in the app:** Profile tab → Reporter hub (`app/src/app/reporter`), the same features natively, sharing the portal's Telugu/English strings (`app/src/data/reporterStrings.ts`).
 - **Contributor portal:** `/reporter` on the CMS app. It is mobile-first, in Telugu and English, and covers onboarding, ID verification, submissions with media and voice, assignments, earnings, wallet, withdrawals and help.
 - **Newsroom modules:** Editorial desk, Reporters, Assignments, Recognition, and a permission-gated Finance desk.
 - **Payouts:** RazorpayX Payouts in test or live mode, or the mock provider.

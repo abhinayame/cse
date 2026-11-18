@@ -4,7 +4,7 @@
  * appear on the CMS editorial desk. Contributors can track them in the reporter portal (/reporter).
  */
 import { useState } from 'react';
-import { Linking, ScrollView, Switch, TextInput, View } from 'react-native';
+import { ScrollView, Switch, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'expo-image';
@@ -118,11 +118,9 @@ export default function Report() {
           {err && <Txt v="bodySm" color={t.colors.breakingText} accessibilityRole="alert">{err}</Txt>}
           <Button label={tr('submit')} icon="send" disabled={!valid} loading={busy} onPress={submit} style={{ marginTop: 8 }} />
           <Txt v="caption" muted align="center">Submissions are reviewed by an editor before publishing. Do not share content you did not capture yourself.</Txt>
-          {!!process.env.EXPO_PUBLIC_REPORTER_PORTAL_URL && (
-            <Tap onPress={() => Linking.openURL(process.env.EXPO_PUBLIC_REPORTER_PORTAL_URL!)} accessibilityRole="link">
-              <Txt v="label" color={t.colors.accentText} align="center">{tr('reporterPortal')} →</Txt>
-            </Tap>
-          )}
+          <Tap onPress={() => router.push('/reporter')} accessibilityRole="link">
+            <Txt v="label" color={t.colors.accentText} align="center">{tr('reporterHub')} →</Txt>
+          </Tap>
         </ScrollView>
       )}
     </View>

@@ -9,6 +9,7 @@ Contributors report from their locality. Editors verify and publish their work. 
 | Reporter portal (mobile-first, Telugu/English) | CMS app at **`/reporter`** (`admin/src/reporter/`) | contributors (phone OTP) |
 | Editorial desk, Reporters, Assignments, Recognition | CMS (`admin/src/pages/Editorial.tsx`, `Reporters.tsx`, `AssignmentsAdmin.tsx`, `Recognition.tsx`) | super admin, editors, district moderators |
 | Finance desk | CMS → **Finance** (`admin/src/pages/Finance.tsx`) | anyone holding the **finance** permission (never implied by a role) |
+| **Reporter hub in the mobile app** | `app/src/app/reporter/*` (Profile tab → Reporter hub) | contributors: dashboard, registration, submit with photos/videos, my news, assignments, wallet / withdraw / history, payout methods, ID + PAN, notifications. Same routes as the web portal, so push links open the matching screen. |
 | Reader app "Citizen Reporter" | `app/src/app/report.tsx` | verified contributors, same workflow |
 | Database, RLS, workflow, ledger | `supabase/migrations/0005_reporters.sql` | — |
 | Payout server code (RazorpayX + mock) | `supabase/functions/_shared/payouts/`, `payouts`, `payout-methods`, `razorpayx-webhook`, `notify-dispatch` | server only |

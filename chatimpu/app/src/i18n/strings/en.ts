@@ -99,6 +99,7 @@ const en = {
   verifiedOnly: 'Only verified reporters can submit. Sign in to get verified.',
   rightsConsent: 'I captured this myself (or have permission), it is accurate as far as I know, and Chatimpu may edit and publish it with credit to me.',
   reporterPortal: 'Track submissions & earnings in the reporter portal',
+  reporterHub: 'Reporter hub · earnings & payouts',
   searchPlaceholder: 'Search news, places, topics',
   filters: 'Filters',
   any: 'Any',
