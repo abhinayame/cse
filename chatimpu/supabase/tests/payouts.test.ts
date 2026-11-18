@@ -186,7 +186,7 @@ test('only approved withdrawals can be paid; live keys need production + kill-sw
 
   const { csv, count } = await exportPayoutCsv(service, env, finance.id, [w.id]);
   assert.equal(count, 1);
-  assert.match(csv, new RegExp(`${w.code}.*"300.00","IMPS","Guard Test","","50100012345678","HDFC0001234"`));
+  assert.match(csv, new RegExp(`${w.code}.*"300.00","300.00","0.00","IMPS","Guard Test","","50100012345678","HDFC0001234"`)); // net, gross, TDS
   const audit = must(await service.from('audit_logs').select('action').eq('action', 'payout_details_exported').eq('actor_id', finance.id)) as unknown[];
   assert.equal(audit.length, 1);
 });

@@ -131,11 +131,13 @@ async function destinationFor(db: SupabaseClient, env: Env, methodId: string): P
 }
 
 // ── Payout initiation (finance-approved withdrawals only) ───────────────────
-interface Withdrawal { id: string; code: string; reporter_id: string; amount_paise: number; status: string; payout_method_id: string; needs_reconciliation: boolean }
+interface Withdrawal { id: string; code: string; reporter_id: string; amount_paise: number; net_paise: number | null; tds_paise: number; status: string; payout_method_id: string; needs_reconciliation: boolean }
+/** What the bank should receive: gross minus TDS (frozen at approval, see migrations/0007_tax.sql). */
+const payable = (w: Withdrawal) => w.net_paise ?? w.amount_paise;
 interface Txn { id: string; status: string; idempotency_key: string; provider: string; provider_payout_id: string | null; amount_paise: number; response_payload: Record<string, any> }
 
 async function loadWithdrawal(db: SupabaseClient, id: string) {
-  const w = check(await db.from('withdrawal_requests').select('id, code, reporter_id, amount_paise, status, payout_method_id, needs_reconciliation').eq('id', id).maybeSingle()) as Withdrawal | null;
+  const w = check(await db.from('withdrawal_requests').select('id, code, reporter_id, amount_paise, net_paise, tds_paise, status, payout_method_id, needs_reconciliation').eq('id', id).maybeSingle()) as Withdrawal | null;
   if (!w) throw new HttpError(404, 'Withdrawal not found');
   return w;
 }
@@ -163,8 +165,8 @@ export async function initiatePayout(db: SupabaseClient, env: Env, provider: Pay
   if (!txn) {
     txn = check(await db.from('payment_transactions').insert({
       withdrawal_id: w.id, provider: provider.name, provider_mode: provider.mode, idempotency_key: crypto.randomUUID(),
-      payout_mode: method.kind === 'upi' ? 'UPI' : 'IMPS', amount_paise: w.amount_paise, status: 'initiating', created_by: actorId,
-      request_payload: { withdrawal: w.code, mode: method.kind === 'upi' ? 'UPI' : 'IMPS', amount_paise: w.amount_paise },
+      payout_mode: method.kind === 'upi' ? 'UPI' : 'IMPS', amount_paise: payable(w), status: 'initiating', created_by: actorId,
+      request_payload: { withdrawal: w.code, mode: method.kind === 'upi' ? 'UPI' : 'IMPS', amount_paise: payable(w), gross_paise: w.amount_paise, tds_paise: w.tds_paise },
     }).select('id, status, idempotency_key, provider, provider_payout_id, amount_paise, response_payload').single()) as Txn;
   }
 
@@ -178,11 +180,11 @@ export async function initiatePayout(db: SupabaseClient, env: Env, provider: Pay
       check(await db.from('payout_methods').update({ provider_contact_id: contactId, provider_fund_account_id: fundAccountId }).eq('id', method.id));
     }
     const payout = await provider.createPayout({
-      idempotencyKey: txn.idempotency_key, fundAccountId: fundAccountId ?? 'fa_mock', amountPaise: w.amount_paise,
+      idempotencyKey: txn.idempotency_key, fundAccountId: fundAccountId ?? 'fa_mock', amountPaise: payable(w),
       mode: method.kind === 'upi' ? 'UPI' : 'IMPS', referenceId: w.code, narration: 'Chatimpu Reporter Earnings',
       notes: { withdrawal: w.code },
     });
-    if (payout.amount !== w.amount_paise) throw new HttpError(502, `Provider amount ${payout.amount} does not match withdrawal ${w.amount_paise}`);
+    if (payout.amount !== payable(w)) throw new HttpError(502, `Provider amount ${payout.amount} does not match the payable amount ${payable(w)}`);
     // A create response is only an acknowledgement: record it, never settle from it.
     const recorded = ['processed'].includes(payout.status) ? 'processing' : payout.status;
     check(await db.from('payment_transactions').update({ provider_payout_id: payout.id, status: recorded, response_payload: payout.raw, updated_at: new Date().toISOString() }).eq('id', txn.id));
@@ -310,15 +312,16 @@ export async function simulateMockOutcome(db: SupabaseClient, env: Env, withdraw
 
 // ── Finance export for manual (bank portal) payouts ─────────────────────────
 export async function exportPayoutCsv(db: SupabaseClient, env: Env, actorId: string, withdrawalIds?: string[]) {
-  let q = db.from('withdrawal_requests').select('id, code, reporter_id, amount_paise, payout_method_id, status, created_at').eq('status', 'approved');
+  let q = db.from('withdrawal_requests').select('id, code, reporter_id, amount_paise, net_paise, tds_paise, payout_method_id, status, created_at').eq('status', 'approved');
   if (withdrawalIds?.length) q = q.in('id', withdrawalIds);
-  const rows = check(await q.order('created_at')) as { id: string; code: string; reporter_id: string; amount_paise: number; payout_method_id: string; created_at: string }[];
+  const rows = check(await q.order('created_at')) as { id: string; code: string; reporter_id: string; amount_paise: number; net_paise: number | null; tds_paise: number; payout_method_id: string; created_at: string }[];
   const names = new Map((check(await db.from('reporter_profiles').select('user_id, full_name').in('user_id', rows.map((r) => r.reporter_id).concat(['00000000-0000-0000-0000-000000000000']))) as { user_id: string; full_name: string }[]).map((r) => [r.user_id, r.full_name]));
-  const esc = (v: string | number) => `"${String(v).replace(/"/g, '""')}"`;
-  const lines = [['withdrawal_code', 'reporter', 'amount_inr', 'mode', 'beneficiary_name', 'upi_id', 'account_number', 'ifsc', 'requested_at'].join(',')];
+  // Quote every cell; prefix cells that a spreadsheet would run as a formula.
+  const esc = (v: string | number) => { const s = String(v); return `"${(/^[=+\-@\t\r]/.test(s) ? "'" : '') + s.replace(/"/g, '""')}"`; };
+  const lines = [['withdrawal_code', 'reporter', 'amount_inr', 'gross_inr', 'tds_inr', 'mode', 'beneficiary_name', 'upi_id', 'account_number', 'ifsc', 'requested_at'].join(',')];
   for (const r of rows) {
     const d = await destinationFor(db, env, r.payout_method_id);
-    lines.push([r.code, names.get(r.reporter_id) ?? '', (r.amount_paise / 100).toFixed(2), d.kind === 'upi' ? 'UPI' : 'IMPS', d.name,
+    lines.push([r.code, names.get(r.reporter_id) ?? '', ((r.net_paise ?? r.amount_paise) / 100).toFixed(2), (r.amount_paise / 100).toFixed(2), (r.tds_paise / 100).toFixed(2), d.kind === 'upi' ? 'UPI' : 'IMPS', d.name,
       d.kind === 'upi' ? d.vpa : '', d.kind === 'bank' ? d.accountNumber : '', d.kind === 'bank' ? d.ifsc : '', r.created_at].map(esc).join(','));
   }
   await db.from('audit_logs').insert({ actor_id: actorId, action: 'payout_details_exported', entity: 'withdrawal_requests', entity_id: null, details: { count: rows.length, codes: rows.map((r) => r.code) } });

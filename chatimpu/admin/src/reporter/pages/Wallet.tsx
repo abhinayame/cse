@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { NavLink } from 'react-router-dom';
 import {
-  addMethod, cancelWithdrawal, earnings, ledger, methods, rates, removeMethod, requestWithdrawal, utrFor, withdrawals,
-  type Earning, type LedgerEntry, type Method, type Rate, type Withdrawal,
+  addMethod, cancelWithdrawal, earnings, ledger, methods, rates, removeMethod, requestWithdrawal, taxSummary, utrFor, withdrawals,
+  type TaxSummary, type Earning, type LedgerEntry, type Method, type Rate, type Withdrawal,
 } from '../api';
 import { rupees, useLang, useT, type T } from '../i18n';
 import { useReporter } from '../ReporterApp';
@@ -57,6 +57,7 @@ function Withdraw() {
   const [amount, setAmount] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const tax = useTax();
   useEffect(() => {
     methods().then((m) => { setMs(m); const v = m.filter((x) => x.verification_status === 'verified'); setMethod((v.find((x) => x.is_default) ?? v[0])?.id ?? ''); }).catch((e) => setErr(e.message));
   }, []);
@@ -78,6 +79,7 @@ function Withdraw() {
       <form className="rp-section rp-card" onSubmit={submit}>
         <h2 style={{ marginBottom: 6 }}>{t('requestWithdrawal')}</h2>
         <p className="rp-meta" style={{ marginBottom: 14 }}>{t('withdrawRules')}</p>
+        <TdsNote tax={tax} />
         {!dash.verified_identity && <div className="rp-banner warn" style={{ marginBottom: 12 }}><div>{t('needId')} <NavLink to="/reporter/profile"><b>{t('addId')} →</b></NavLink></div></div>}
         {ms && verified.length === 0 && <div className="rp-banner warn" style={{ marginBottom: 12 }}><div>{t('needVerifiedMethod')} <NavLink to="/reporter/methods"><b>{t('methods')} →</b></NavLink></div></div>}
         <div className="rp-field"><label htmlFor="w-amt">{t('amount')} (₹)</label>
@@ -106,6 +108,7 @@ function Earnings() {
   const [e, setE] = useState<Earning[] | null>(null);
   const [l, setL] = useState<LedgerEntry[]>([]);
   const [err, setErr] = useState<string | null>(null);
+  const tax = useTax();
   useEffect(() => { Promise.all([rates(), earnings(), ledger()]).then(([a, b, c]) => { setR(a); setE(b); setL(c); }).catch((x) => setErr(x.message)); }, []);
   const label = (code: string) => { const x = r.find((y) => y.code === code); return x ? (lang === 'te' ? x.label_te : x.label_en) : code; };
   return (
@@ -120,6 +123,12 @@ function Earnings() {
         ))}
         <p className="rp-hint" style={{ marginTop: 8 }}>{t('withdrawRules')}</p>
       </section>
+      {tax?.tds_enabled && (
+        <section className="rp-section rp-card">
+          <div className="rp-list-item"><div className="grow">{t('tdsThisYear')} · FY {tax.fy}</div><b className="rp-amount">{rupees(tax.fy_tds_paise)}</b></div>
+          <TdsNote tax={tax} />
+        </section>
+      )}
       <section className="rp-section rp-card">
         <h2 style={{ marginBottom: 6 }}>{t('earnings')}</h2>
         {e === null ? <p className="rp-empty">…</p> : e.length === 0 ? <p className="rp-empty">—</p> : e.map((x) => (
@@ -172,6 +181,7 @@ function History() {
             <div className="grow">
               <div className="rp-row" style={{ justifyContent: 'space-between' }}><b className="rp-amount" style={{ fontSize: 17 }}>{rupees(w.amount_paise)}</b><WithdrawalStatus s={w.status} t={t} /></div>
               <div className="rp-meta">{w.code} · {w.method_snapshot?.kind === 'upi' ? 'UPI' : 'Bank'} {w.method_snapshot?.masked} · {fmtDate(w.created_at, lang)}</div>
+              {w.tds_paise > 0 && <div className="rp-meta">{t('tdsLine')} −{rupees(w.tds_paise)} · {t('received')} <b>{rupees(w.net_paise ?? w.amount_paise - w.tds_paise)}</b></div>}
               {w.utr && <div className="rp-meta">UTR: <b>{w.utr}</b>{w.paid_at ? ` · ${fmtDate(w.paid_at, lang)}` : ''}</div>}
               {w.reason && ['rejected', 'failed', 'reversed'].includes(w.status) && <div className="rp-hint" style={{ color: 'var(--red)' }}>{w.reason}</div>}
               {['failed', 'reversed', 'rejected'].includes(w.status) && !w.needs_reconciliation && <div className="rp-hint" style={{ color: '#1F8A55' }}>✓ {t('restored')}</div>}
@@ -268,6 +278,23 @@ function AddMethod({ kind, onClose, onAdded }: { kind: 'upi' | 'bank'; onClose: 
           <button className="rp-btn primary grow" disabled={busy || mismatch || (kind === 'bank' ? !f.accountNumber || f.confirm !== f.accountNumber || f.ifsc.length !== 11 : !f.upi.includes('@'))}>{busy ? t('saving') : t('save')}</button>
         </div>
       </form>
+    </div>
+  );
+}
+
+/** TDS explanation, filled from the live settings (only shown when TDS is switched on). */
+function useTax() {
+  const [tax, setTax] = useState<TaxSummary | null>(null);
+  useEffect(() => { taxSummary().then(setTax).catch(() => setTax(null)); }, []);
+  return tax;
+}
+function TdsNote({ tax }: { tax: TaxSummary | null }) {
+  const t = useT();
+  if (!tax?.tds_enabled) return null;
+  const text = t('tdsNote').replace('{threshold}', rupees(tax.threshold_paise)).replace('{rate}', String(tax.rate_bps / 100)).replace('{noPan}', String(tax.rate_no_pan_bps / 100));
+  return (
+    <div className="rp-banner info" style={{ marginBottom: 12 }}>
+      <div>{text}{tax.pan?.status !== 'verified' && <> <NavLink to="/reporter/profile"><b>{t('panTitle')} →</b></NavLink></>}</div>
     </div>
   );
 }

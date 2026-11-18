@@ -135,6 +135,7 @@ export interface FinanceSummary {
 export interface WithdrawalRow {
   id: string; code: string; reporter_id: string; amount_paise: number; payout_method_id: string; method_snapshot: { kind?: string; masked?: string; holder_name?: string; ifsc?: string };
   status: string; reason: string | null; needs_reconciliation: boolean; reviewed_at: string | null; paid_at: string | null; created_at: string; updated_at: string;
+  tds_paise: number; net_paise: number | null;
 }
 export interface Txn { id: string; withdrawal_id: string; provider: string; provider_mode: string; payout_mode: string | null; provider_payout_id: string | null; status: string; utr: string | null; amount_paise: number; failure_reason: string | null; created_at: string; updated_at: string }
 export interface MethodRow { id: string; reporter_id: string; kind: string; holder_name: string; masked: string; ifsc: string | null; bank_name: string | null; verification_status: string; verification_note: string | null; created_at: string; active: boolean }
@@ -196,5 +197,37 @@ export function downloadCsv(name: string, rows: Record<string, unknown>[]) {
   const csv = [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\n');
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
   Object.assign(document.createElement('a'), { href: url, download: name }).click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// ── Tax (TDS, PAN) — migrations/0007_tax.sql ────────────────────────────────
+export interface TaxRow { reporter_id: string; name: string; district_id: string; pan_masked: string | null; pan_status: string; paid_gross_paise: number; taxable_paise: number; tds_paise: number; net_paid_paise: number; payouts: number; provisional_tds_paise: number; challans: string | null }
+export interface MonthRow { month: string; payouts: number; gross_paise: number; tds_paise: number; net_paise: number; reporters: number }
+export interface TaxProfile { user_id: string; pan_masked: string; name_on_pan: string; status: string; note: string | null; created_at: string }
+/** Indian financial year (April–March, IST) for a date. */
+export const fyOf = (d = new Date()) => {
+  const ist = new Date(d.getTime() + 5.5 * 3600e3);
+  const y = ist.getUTCMonth() >= 3 ? ist.getUTCFullYear() : ist.getUTCFullYear() - 1;
+  return `${y}-${String((y + 1) % 100).padStart(2, '0')}`;
+};
+export const taxReport = (fy: string) => rpc<TaxRow[]>('tax_report', { p_fy: fy });
+export const monthlyPayouts = (fy: string) => rpc<MonthRow[]>('payout_report_monthly', { p_fy: fy });
+export const loadTaxProfiles = async (status: string) => {
+  let q = db().from('reporter_tax_profiles').select('user_id, pan_masked, name_on_pan, status, note, created_at').order('created_at');
+  if (status !== 'all') q = q.eq('status', status);
+  return ok(await q) as TaxProfile[];
+};
+export const verifyTaxProfile = (user: string, status: 'verified' | 'failed', note?: string) => rpc('verify_tax_profile', { p_user: user, p_status: status, p_note: note ?? null });
+export const recordChallan = (fy: string, quarter: string, challan: string) => rpc<number>('record_tds_challan', { p_fy: fy, p_quarter: quarter, p_challan: challan });
+/** Form 26Q worksheet with full PANs — through the payouts function, audited, never cached. */
+export async function exportTdsWorksheet(fy: string, quarter?: string) {
+  const { data: s } = await db().auth.getSession();
+  const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/payouts`, {
+    method: 'POST', headers: { Authorization: `Bearer ${s.session?.access_token}`, apikey: import.meta.env.VITE_SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'tax-export', fy, quarter: quarter || undefined }),
+  });
+  if (!res.ok) throw new Error((await res.json().catch(() => null))?.error ?? `Export failed (${res.status})`);
+  const url = URL.createObjectURL(await res.blob());
+  Object.assign(document.createElement('a'), { href: url, download: `chatimpu-tds-${fy}${quarter ? `-${quarter}` : ''}.csv` }).click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

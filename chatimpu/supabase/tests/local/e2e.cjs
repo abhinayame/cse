@@ -296,6 +296,55 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
       await shot(rp, '20b-help-telugu-body-text');
     });
 
+    await step('TDS: finance turns TDS on, reporter adds PAN, finance verifies it; payout shows gross − TDS = net', async () => {
+      const pan = 'ABCPL' + String(1000 + Math.floor(Math.random() * 8999)) + 'Q';
+      sql(`update app_settings set value = 'false' where key = 'tds_enabled'`);                    // start from TDS off
+      sql(`update app_settings set value = '10000' where key = 'tds_threshold_paise'`);           // ₹100 so the test crosses it
+      sql(`select credit_earning('${reporterId}', 'bonus', 50000, null, null, null, 'E2E: TDS test balance')`);
+      await fp.getByRole('button', { name: 'Tax & reports' }).click();
+      fp.once('dialog', (d) => d.accept());
+      await fp.getByRole('button', { name: 'Turn on' }).click();
+      await toast(fp, /TDS turned on/);
+      await rp.goto(`${BASE}/reporter/profile`);
+      if (await rp.getByRole('button', { name: 'English' }).count()) await rp.getByRole('button', { name: 'English' }).first().click();
+      await shot(rp, 'debug-pan');
+      await rp.getByLabel('PAN', { exact: true }).fill(pan);
+      await rp.getByLabel('Name as on PAN card').fill(NAME);
+      await rp.getByRole('button', { name: 'Save PAN' }).click();
+      await toast(rp, /PAN saved/);
+      assert.ok(!sql(`select ciphertext from reporter_tax_secrets where user_id = '${reporterId}'`).includes(pan), 'PAN encrypted at rest');
+      await fp.getByRole('button', { name: 'Tax & reports' }).click();
+      await fp.locator('.row', { hasText: NAME }).getByRole('button', { name: 'Verify' }).click();
+      await reasonDialog(fp, 'Matches Income-tax portal');
+      await toast(fp, /PAN verified/);
+      await rp.goto(`${BASE}/reporter/withdraw`);
+      await rp.getByText(/TDS: once your payouts/).first().waitFor();
+      await rp.getByLabel('Amount (₹)').fill('400');
+      await rp.getByRole('button', { name: /Request withdrawal ₹400/ }).click();
+      await toast(rp, /WDR-/);
+      const w = sql(`select id from withdrawal_requests where reporter_id = '${reporterId}' and status = 'requested'`);
+      await fp.getByRole('button', { name: 'Withdrawals' }).click();
+      await fp.locator('.filters select').first().selectOption('requested');
+      await fp.locator('.queue-item', { hasText: NAME }).first().click();
+      fp.once('dialog', (d) => d.accept()); await fp.getByRole('button', { name: 'Approve', exact: true }).click(); await toast(fp, /Approved/);
+      // this FY: ₹600 paid earlier + ₹400 = ₹1,000 > ₹100 → 10% (verified PAN) on ₹1,000 = ₹100; bank gets ₹300
+      assert.equal(sql(`select tds_paise || '/' || net_paise from withdrawal_requests where id = '${w}'`), '10000/30000');
+      await fp.getByText('bank receives').first().waitFor();
+      fp.once('dialog', (d) => d.accept()); await fp.getByRole('button', { name: /Send payout \(mock\)/ }).click(); await toast(fp, /waiting for confirmation/);
+      assert.equal(sql(`select amount_paise from payment_transactions where withdrawal_id = '${w}'`), '30000', 'provider sends the net amount');
+      await fp.getByRole('button', { name: 'processed', exact: true }).click(); await toast(fp, /Simulated processed/);
+      await shot(fp, '22-finance-tds-paid');
+      await fp.getByRole('button', { name: 'Tax & reports' }).click();
+      await fp.locator('tr', { hasText: NAME }).first().waitFor();
+      await shot(fp, '23-finance-tax-report');
+      await rp.goto(`${BASE}/reporter/history`);
+      await rp.getByText(/You received/).first().waitFor();
+      await shot(rp, '24-history-tds');
+      assert.equal(sql(`select count(*) from ledger_check()`), '0');
+      fp.once('dialog', (d) => d.accept()); await fp.getByRole('button', { name: 'Turn off' }).click(); await toast(fp, /TDS turned off/);
+      sql(`update app_settings set value = '5000000' where key = 'tds_threshold_paise'`);
+    });
+
     await step('Assignment: editor creates an open assignment → reporter is notified and accepts', async () => {
       await ed.goto(`${BASE}/assignments`);
       await ed.getByRole('button', { name: '＋ New assignment' }).click();

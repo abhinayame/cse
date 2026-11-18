@@ -113,13 +113,13 @@ export interface Rate { code: string; label_en: string; label_te: string; min_pa
 export interface LedgerEntry { id: number; entry_type: string; available_delta: number; reserved_delta: number; paid_delta: number; note: string | null; created_at: string }
 export interface Earning { id: string; code: string; contribution_code: string; amount_paise: number; status: string; approved_at: string; submission_id: string | null }
 export interface Method { id: string; kind: 'upi' | 'bank'; holder_name: string; masked: string; ifsc: string | null; bank_name: string | null; verification_status: string; verification_note: string | null; is_default: boolean; active: boolean }
-export interface Withdrawal { id: string; code: string; amount_paise: number; status: string; reason: string | null; method_snapshot: { masked?: string; kind?: string }; created_at: string; paid_at: string | null; needs_reconciliation: boolean }
+export interface Withdrawal { id: string; code: string; amount_paise: number; tds_paise: number; net_paise: number | null; status: string; reason: string | null; method_snapshot: { masked?: string; kind?: string }; created_at: string; paid_at: string | null; needs_reconciliation: boolean }
 
 export const rates = async () => ok(await db().from('contribution_rates').select('*').eq('active', true).order('sort')) as Rate[];
 export const ledger = async () => ok(await db().from('wallet_ledger_entries').select('id, entry_type, available_delta, reserved_delta, paid_delta, note, created_at').order('id', { ascending: false }).limit(100)) as LedgerEntry[];
 export const earnings = async () => ok(await db().from('reporter_earnings').select('id, code, contribution_code, amount_paise, status, approved_at, submission_id').order('approved_at', { ascending: false }).limit(100)) as Earning[];
 export const methods = async () => ok(await db().from('payout_methods').select('id, kind, holder_name, masked, ifsc, bank_name, verification_status, verification_note, is_default, active').eq('active', true).order('created_at')) as Method[];
-export const withdrawals = async () => ok(await db().from('withdrawal_requests').select('id, code, amount_paise, status, reason, method_snapshot, created_at, paid_at, needs_reconciliation').order('created_at', { ascending: false })) as Withdrawal[];
+export const withdrawals = async () => ok(await db().from('withdrawal_requests').select('id, code, amount_paise, tds_paise, net_paise, status, reason, method_snapshot, created_at, paid_at, needs_reconciliation').order('created_at', { ascending: false })) as Withdrawal[];
 export const utrFor = async (withdrawalId: string) =>
   (ok(await db().from('payment_transactions').select('utr').eq('withdrawal_id', withdrawalId).not('utr', 'is', null).limit(1)) as { utr: string }[])[0]?.utr ?? null;
 
@@ -136,3 +136,17 @@ export const cancelWithdrawal = async (id: string) => ok(await db().rpc('cancel_
 export interface Notification { id: string; kind: string; title_en: string; title_te: string | null; body_en: string | null; body_te: string | null; link: string | null; read_at: string | null; created_at: string }
 export const notifications = async () => ok(await db().from('notifications').select('*').order('created_at', { ascending: false }).limit(100)) as Notification[];
 export const markAllRead = async () => ok(await db().from('notifications').update({ read_at: new Date().toISOString() }).is('read_at', null));
+
+// ── tax (TDS / PAN) ───────────────────────────────────────────────────────
+export interface TaxSummary {
+  fy: string; tds_enabled: boolean; rate_bps: number; rate_no_pan_bps: number; threshold_paise: number; section: string;
+  pan: { masked: string; name: string; status: 'pending' | 'verified' | 'failed'; note: string | null } | null;
+  fy_paid_gross_paise: number; fy_tds_paise: number;
+}
+export const taxSummary = async () => ok(await db().rpc('my_tax_summary')) as TaxSummary;
+/** PAN is validated and encrypted server-side; only the masked form comes back. */
+export async function addPan(pan: string, name: string) {
+  const { data, error } = await db().functions.invoke('payout-methods', { body: { action: 'tax-profile', pan, name } });
+  if (error) throw new Error((await (error as { context?: Response }).context?.json?.().catch(() => null))?.error ?? error.message);
+  return data.taxProfile as { pan_masked: string; status: string };
+}

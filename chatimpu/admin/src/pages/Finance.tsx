@@ -13,11 +13,12 @@ import { supabase } from '../lib/supabase';
 import {
   downloadCsv, exportCsv, financeSummary, ledgerCheck, loadAudit, loadMethods, loadRates, loadReporters, loadSettings, loadTxns, loadWithdrawals,
   manualFailed, manualPaid, paise, payouts, rpc, reviewWithdrawal, searchReporterIds, setSetting, updateRate, verifyMethod, when,
-  type AuditRow, type FinanceSummary, type MethodRow, type Rate, type ReporterRow, type Txn, type WithdrawalRow,
+  exportTdsWorksheet, fyOf, loadTaxProfiles, monthlyPayouts, recordChallan, taxReport, verifyTaxProfile,
+  type AuditRow, type FinanceSummary, type MethodRow, type MonthRow, type Rate, type ReporterRow, type TaxProfile, type TaxRow, type Txn, type WithdrawalRow,
 } from '../newsroom/api';
 import { Kpi, NeedsBackend, Status, label, useReasonDialog } from '../newsroom/ui';
 
-type Tab = 'overview' | 'withdrawals' | 'methods' | 'rates' | 'audit';
+type Tab = 'overview' | 'withdrawals' | 'methods' | 'rates' | 'tax' | 'audit';
 interface ProviderStatus { provider: string; mode: string; production: boolean; webhookConfigured: boolean }
 
 export default function Finance() {
@@ -39,8 +40,8 @@ function Desk() {
   return (
     <>
       <PageHead kicker="Finance" title="Payouts & earnings">
-        <div className="tabs">{(['overview', 'withdrawals', 'methods', 'rates', 'audit'] as Tab[]).map((t) => (
-          <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{{ overview: 'Overview', withdrawals: 'Withdrawals', methods: 'Payment methods', rates: 'Rate card & rules', audit: 'Ledger & audit' }[t]}</button>
+        <div className="tabs">{(['overview', 'withdrawals', 'methods', 'rates', 'tax', 'audit'] as Tab[]).map((t) => (
+          <button key={t} className={tab === t ? 'on' : ''} onClick={() => setTab(t)}>{{ overview: 'Overview', withdrawals: 'Withdrawals', methods: 'Payment methods', rates: 'Rate card & rules', tax: 'Tax & reports', audit: 'Ledger & audit' }[t]}</button>
         ))}</div>
       </PageHead>
       <ProviderBanner p={provider} err={providerErr} />
@@ -48,6 +49,7 @@ function Desk() {
       {tab === 'withdrawals' && <Withdrawals names={names} provider={provider} />}
       {tab === 'methods' && <Methods names={names} />}
       {tab === 'rates' && <Rates />}
+      {tab === 'tax' && <Tax names={names} />}
       {tab === 'audit' && <Audit names={names} />}
     </>
   );
@@ -195,6 +197,12 @@ function WithdrawalDetail({ w, reporter, provider, onChange }: { w: WithdrawalRo
     <div className="card grid" style={{ gap: 14 }}>
       {dialog}
       <div className="row"><h2>{paise(w.amount_paise)}</h2><Status s={w.status} /><span className="spacer" /><span className="faint">{w.code}</span></div>
+      {w.tds_paise > 0 && (
+        <div className="warn-box" style={{ fontSize: 13 }}>
+          Gross <b className="money">{paise(w.amount_paise)}</b> − TDS <b className="money">{paise(w.tds_paise)}</b> = bank receives <b className="money">{paise(w.net_paise ?? w.amount_paise - w.tds_paise)}</b>
+          <span className="faint"> · deposit the TDS with the government and record the challan in Tax &amp; reports</span>
+        </div>
+      )}
       <div className="grid" style={{ gridTemplateColumns: '1fr 1fr', gap: 10, fontSize: 13 }}>
         <div><div className="faint">Reporter</div><b>{reporter?.full_name ?? '—'}</b>{reporter && <div className="faint">{district(reporter.district_id)} · {label(reporter.status)}</div>}</div>
         <div><div className="faint">Pay to</div><b>{w.method_snapshot.kind === 'upi' ? 'UPI' : 'Bank'} {w.method_snapshot.masked}</b><div className="faint">{w.method_snapshot.holder_name}{w.method_snapshot.ifsc ? ` · ${w.method_snapshot.ifsc}` : ''}</div></div>
@@ -346,6 +354,117 @@ function Rates() {
             {session.role === 'super_admin' || session.permissions?.includes('finance')
               ? <button className={`btn ${live ? 'ghost' : 'danger'}`} onClick={() => { if (confirm(live ? 'Disable live payouts?' : 'Enable LIVE payouts? Real money will move.')) saveSetting('payouts_live_enabled', !live, live ? 'Live payouts disabled' : 'Live payouts enabled'); }}>{live ? 'Disable' : 'Enable live payouts'}</button> : null}</div>
         </div>
+      </div>
+    </>
+  );
+}
+
+// ── Tax & reports ────────────────────────────────────────────────────────────
+function Tax({ names }: { names: Record<string, ReporterRow> }) {
+  const { toast, session } = useStore();
+  const { ask, dialog } = useReasonDialog();
+  const [fy, setFy] = useState(fyOf());
+  const [rows, setRows] = useState<TaxRow[] | null>(null);
+  const [months, setMonths] = useState<MonthRow[]>([]);
+  const [pans, setPans] = useState<TaxProfile[]>([]);
+  const [cfg, setCfg] = useState({ enabled: false, section: '194J', rate: '10', noPan: '20', threshold: '50000' });
+  const [quarter, setQuarter] = useState('');
+  const load = useCallback(async () => {
+    try {
+      const [r, m, p, s] = await Promise.all([taxReport(fy), monthlyPayouts(fy), loadTaxProfiles('pending'),
+        loadSettings(['tds_enabled', 'tds_section', 'tds_rate_bps', 'tds_rate_no_pan_bps', 'tds_threshold_paise'])]);
+      setRows(r); setMonths(m); setPans(p);
+      setCfg({ enabled: s.tds_enabled === true || s.tds_enabled === 'true', section: String(s.tds_section ?? '194J'), rate: String(Number(s.tds_rate_bps ?? 1000) / 100),
+        noPan: String(Number(s.tds_rate_no_pan_bps ?? 2000) / 100), threshold: String(Number(s.tds_threshold_paise ?? 5000000) / 100) });
+    } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  }, [fy, toast]);
+  useEffect(() => { load(); }, [load]);
+  const fys = Array.from({ length: 4 }, (_, i) => { const y = Number(fyOf().slice(0, 4)) - i; return `${y}-${String((y + 1) % 100).padStart(2, '0')}`; });
+  const saveCfg = async () => {
+    try {
+      await setSetting('tds_section', cfg.section.trim());
+      await setSetting('tds_rate_bps', Math.round(Number(cfg.rate) * 100));
+      await setSetting('tds_rate_no_pan_bps', Math.round(Number(cfg.noPan) * 100));
+      await setSetting('tds_threshold_paise', Math.round(Number(cfg.threshold) * 100));
+      toast('TDS settings saved (apply to withdrawals approved from now on)'); load();
+    } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  };
+  const toggle = async () => {
+    if (!confirm(cfg.enabled ? 'Turn TDS off? Withdrawals approved from now on are paid gross.' : `Turn TDS on? From now on, approvals deduct ${cfg.rate}% (${cfg.noPan}% without a verified PAN) once a reporter's payouts this financial year exceed ₹${cfg.threshold}. Confirm these values with your CA first.`)) return;
+    try { await setSetting('tds_enabled', !cfg.enabled); toast(cfg.enabled ? 'TDS turned off' : 'TDS turned on'); load(); } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  };
+  const decidePan = async (p: TaxProfile, status: 'verified' | 'failed') => {
+    const note = await ask(status === 'verified' ? `Verify PAN ${p.pan_masked}` : `Reject PAN ${p.pan_masked}`, { required: status === 'failed', hint: status === 'verified' ? 'Confirm the name matches the PAN card / Income-tax portal. Optional note.' : 'Tell the reporter what is wrong.' });
+    if (note === null) return;
+    try { await verifyTaxProfile(p.user_id, status, note || undefined); toast(`PAN ${status}`); load(); } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  };
+  const challan = async () => {
+    if (!quarter) return toast('Choose a quarter first');
+    const ref = await ask(`Record challan for ${fy} ${quarter}`, { hint: 'CIN / BSR code + challan serial from the bank receipt. Applied to every deducted, unrecorded TDS row of that quarter.' });
+    if (!ref) return;
+    try { const n = await recordChallan(fy, quarter, ref); toast(`Challan recorded on ${n} deduction(s)`); load(); } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  };
+  const tot = (rows ?? []).reduce((a, r) => ({ gross: a.gross + r.paid_gross_paise, tds: a.tds + r.tds_paise, net: a.net + r.net_paid_paise, prov: a.prov + r.provisional_tds_paise }), { gross: 0, tds: 0, net: 0, prov: 0 });
+  return (
+    <>
+      {dialog}
+      <div className="filters">
+        <select className="input" value={fy} onChange={(e) => setFy(e.target.value)} aria-label="Financial year">{fys.map((f) => <option key={f} value={f}>FY {f}</option>)}</select>
+        <select className="input" value={quarter} onChange={(e) => setQuarter(e.target.value)} aria-label="Quarter"><option value="">All quarters</option>{['Q1', 'Q2', 'Q3', 'Q4'].map((q) => <option key={q}>{q}</option>)}</select>
+        <span className="spacer" />
+        <button className="btn ghost" onClick={challan}>Record challan…</button>
+        <button className="btn dark" onClick={async () => { if (!confirm('Download the TDS-return worksheet with FULL PANs? This is logged. Store it securely.')) return; try { await exportTdsWorksheet(fy, quarter); toast('Worksheet downloaded (audited)'); } catch (e) { toast(`⚠ ${(e as Error).message}`); } }}>TDS worksheet (26Q)</button>
+      </div>
+      <div className="kpis">
+        <Kpi label={`Paid to reporters · FY ${fy}`} value={paise(tot.gross)} sub="gross, confirmed payouts" />
+        <Kpi label="TDS deducted" value={paise(tot.tds)} sub={tot.prov ? `+ ${paise(tot.prov)} on payouts not yet confirmed` : 'to deposit with the government'} />
+        <Kpi label="Sent to bank accounts" value={paise(tot.net)} tone="green" />
+        <Kpi label="PANs waiting for verification" value={pans.length} tone={pans.length ? 'red' : undefined} />
+      </div>
+      <div className="grid" style={{ marginTop: 16, gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+        <div className="card grid" style={{ gap: 10 }}>
+          <div className="row"><h2>TDS</h2><Status s={cfg.enabled ? 'active' : 'suspended'} /><span className="faint">{cfg.enabled ? 'On' : 'Off — payouts are made gross'}</span><span className="spacer" />
+            {(session.role === 'super_admin' || session.permissions?.includes('finance')) && <button className={`btn sm ${cfg.enabled ? 'ghost' : 'primary'}`} onClick={toggle}>{cfg.enabled ? 'Turn off' : 'Turn on'}</button>}</div>
+          <p className="faint" style={{ margin: 0, fontSize: 12.5 }}>Deducted when a withdrawal is approved. Once a reporter's payouts in the financial year cross the threshold, TDS applies to the whole year's amount not yet taxed. <b>These values are placeholders — confirm section, rates and threshold with your Chartered Accountant.</b></p>
+          <div className="row" style={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className="field" style={{ margin: 0 }}><label htmlFor="tx-s">Section</label><input id="tx-s" className="input" style={{ width: 90 }} value={cfg.section} onChange={(e) => setCfg({ ...cfg, section: e.target.value })} /></div>
+            <div className="field" style={{ margin: 0 }}><label htmlFor="tx-r">Rate % (PAN)</label><input id="tx-r" className="input" style={{ width: 90 }} type="number" min={0} max={30} step={0.01} value={cfg.rate} onChange={(e) => setCfg({ ...cfg, rate: e.target.value })} /></div>
+            <div className="field" style={{ margin: 0 }}><label htmlFor="tx-n">Rate % (no PAN)</label><input id="tx-n" className="input" style={{ width: 90 }} type="number" min={0} max={30} step={0.01} value={cfg.noPan} onChange={(e) => setCfg({ ...cfg, noPan: e.target.value })} /></div>
+            <div className="field" style={{ margin: 0 }}><label htmlFor="tx-t">Yearly threshold ₹</label><input id="tx-t" className="input" style={{ width: 120 }} type="number" min={0} value={cfg.threshold} onChange={(e) => setCfg({ ...cfg, threshold: e.target.value })} /></div>
+            <button className="btn dark" onClick={saveCfg}>Save</button>
+          </div>
+        </div>
+        <div className="card">
+          <h2 style={{ marginBottom: 8 }}>PAN verification</h2>
+          {pans.length === 0 ? <p className="faint">No PANs waiting.</p> : pans.map((p) => (
+            <div key={p.user_id} className="row" style={{ padding: '8px 0', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ flex: 1 }}><b>{names[p.user_id]?.full_name ?? 'Reporter'}</b><div className="faint" style={{ fontSize: 12.5 }}>PAN {p.pan_masked} · name on card: {p.name_on_pan} · {when(p.created_at)}</div></div>
+              {p.user_id === session.userId ? <span className="faint" style={{ fontSize: 12 }}>Your own</span> : <>
+                <button className="btn sm primary" onClick={() => decidePan(p, 'verified')}>Verify</button>
+                <button className="btn sm ghost" onClick={() => decidePan(p, 'failed')}>Reject</button></>}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="card table-wrap" style={{ marginTop: 16, padding: 8 }}>
+        <div className="filters" style={{ padding: '8px 10px', margin: 0 }}><h2>Per reporter · FY {fy}</h2><span className="spacer" />
+          <button className="btn ghost sm" onClick={() => downloadCsv(`chatimpu-tax-${fy}.csv`, (rows ?? []).map((r) => ({ reporter: r.name, district: district(r.district_id), pan: r.pan_masked ?? '', pan_status: r.pan_status, payouts: r.payouts, gross_inr: (r.paid_gross_paise / 100).toFixed(2), taxable_inr: (r.taxable_paise / 100).toFixed(2), tds_inr: (r.tds_paise / 100).toFixed(2), net_inr: (r.net_paid_paise / 100).toFixed(2), challans: r.challans ?? '' })))}>CSV</button></div>
+        <table><thead><tr><th>Reporter</th><th>PAN</th><th>Payouts</th><th>Gross paid</th><th>TDS</th><th>To bank</th><th>Challan</th></tr></thead>
+          <tbody>{rows === null ? <tr><td colSpan={7} className="empty">Loading…</td></tr> : rows.length === 0 ? <tr><td colSpan={7} className="empty">No payouts in FY {fy}</td></tr> : rows.map((r) => (
+            <tr key={r.reporter_id}><td><b>{r.name}</b><div className="faint" style={{ fontSize: 12 }}>{district(r.district_id)}</div></td>
+              <td>{r.pan_masked ?? '—'} <Status s={r.pan_status === 'missing' ? 'pending' : r.pan_status} /></td><td>{r.payouts}</td>
+              <td className="money">{paise(r.paid_gross_paise)}</td><td className="money">{paise(r.tds_paise)}{r.provisional_tds_paise ? <div className="faint" style={{ fontSize: 12 }}>+{paise(r.provisional_tds_paise)} pending</div> : null}</td>
+              <td className="money">{paise(r.net_paid_paise)}</td><td className="faint" style={{ fontSize: 12 }}>{r.challans ?? '—'}</td></tr>
+          ))}</tbody></table>
+      </div>
+      <div className="card table-wrap" style={{ marginTop: 16, padding: 8 }}>
+        <div className="filters" style={{ padding: '8px 10px', margin: 0 }}><h2>Monthly payouts · FY {fy}</h2><span className="spacer" />
+          <button className="btn ghost sm" onClick={() => downloadCsv(`chatimpu-payouts-monthly-${fy}.csv`, months.map((m) => ({ month: m.month, payouts: m.payouts, reporters: m.reporters, gross_inr: (m.gross_paise / 100).toFixed(2), tds_inr: (m.tds_paise / 100).toFixed(2), net_inr: (m.net_paise / 100).toFixed(2) })))}>CSV</button></div>
+        <table><thead><tr><th>Month</th><th>Payouts</th><th>Reporters</th><th>Gross</th><th>TDS</th><th>To bank</th></tr></thead>
+          <tbody>{months.length === 0 ? <tr><td colSpan={6} className="empty">No payouts yet</td></tr> : months.map((m) => (
+            <tr key={m.month}><td><b>{new Date(`${m.month}-01`).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' })}</b></td><td>{m.payouts}</td><td>{m.reporters}</td>
+              <td className="money">{paise(m.gross_paise)}</td><td className="money">{paise(m.tds_paise)}</td><td className="money">{paise(m.net_paise)}</td></tr>
+          ))}</tbody></table>
       </div>
     </>
   );

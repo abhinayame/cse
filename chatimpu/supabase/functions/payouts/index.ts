@@ -6,12 +6,14 @@
  *   { action: 'export', withdrawalIds? }   CSV with beneficiary details for manual bank payouts (audited)
  *   { action: 'simulate', withdrawalId, outcome }  mock provider only, never in production
  *   { action: 'status' }                   which provider/mode is active
+ *   { action: 'tax-export', fy, quarter? } TDS-return worksheet with full PAN (audited)
  * Secrets: PAYOUT_PROVIDER (mock|razorpayx), RAZORPAYX_KEY_ID, RAZORPAYX_KEY_SECRET, RAZORPAYX_ACCOUNT_NUMBER,
  *          RAZORPAYX_WEBHOOK_SECRET, PAYOUT_ENCRYPTION_KEY, APP_ENV
  */
 import { createClient } from '@supabase/supabase-js';
 import { exportPayoutCsv, HttpError, initiatePayout, makeProvider, payoutConfig, reconcileWithdrawal, simulateMockOutcome, syncPayout } from '../_shared/payouts/service.ts';
 import { cors, errorResponse, json } from '../_shared/payouts/http.ts';
+import { exportTdsCsv } from '../_shared/payouts/tax.ts';
 
 const env = (k: string) => Deno.env.get(k);
 
@@ -41,6 +43,10 @@ Deno.serve(async (req) => {
       case 'export': {
         const { csv } = await exportPayoutCsv(db, env, actor, body.withdrawalIds);
         return new Response(csv, { headers: { ...cors, 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="chatimpu-payouts.csv"', 'Cache-Control': 'no-store' } });
+      }
+      case 'tax-export': {
+        const csv = await exportTdsCsv(db, env, actor, body.fy, body.quarter);
+        return new Response(csv, { headers: { ...cors, 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="chatimpu-tds-${body.fy}${body.quarter ? '-' + body.quarter : ''}.csv"`, 'Cache-Control': 'no-store' } });
       }
       default: throw new HttpError(400, 'Unknown action');
     }

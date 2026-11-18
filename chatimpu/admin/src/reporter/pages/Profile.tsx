@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { DISTRICTS, MANDALS } from '@data/locations';
 import { supabase } from '../../lib/supabase';
 import { CATS } from '../../lib/format';
-import { db, ok, register, safeName, submitVerification, uploadWithProgress } from '../api';
+import { addPan, db, ok, register, safeName, submitVerification, taxSummary, uploadWithProgress, type TaxSummary } from '../api';
 import { catLabel, useLang, useT } from '../i18n';
 import { useReporter } from '../ReporterApp';
 import { ErrorNote, ReporterStatus, fmtDate, useToast } from '../ui';
@@ -102,6 +102,8 @@ export default function Profile() {
         )}
       </section>
 
+      <PanCard />
+
       <section className="rp-section rp-card" aria-label={t('profile')}>
         <h2 style={{ marginBottom: 12 }}>{t('profile')}</h2>
         <div className="rp-field"><label htmlFor="p-n">{t('fullName')}</label><input id="p-n" className="rp-input" value={f.full_name} onChange={(e) => setF({ ...f, full_name: e.target.value })} /></div>
@@ -126,3 +128,39 @@ export default function Profile() {
   );
 }
 
+
+function PanCard() {
+  const t = useT(); const toast = useToast();
+  const [tax, setTax] = useState<TaxSummary | null>(null);
+  const [f, setF] = useState({ pan: '', name: '' });
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const load = () => taxSummary().then(setTax).catch((e) => setErr(e.message));
+  useEffect(() => { load(); }, []);
+  const pan = tax?.pan;
+  const save = async () => {
+    setBusy(true); setErr(null);
+    try { await addPan(f.pan, f.name); toast(t('panSaved')); setF({ pan: '', name: '' }); await load(); }
+    catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
+  };
+  const tone = pan?.status === 'verified' ? 'green' : pan?.status === 'failed' ? 'red' : 'amber';
+  return (
+    <section className="rp-section rp-card" aria-label={t('panTitle')}>
+      <div className="rp-section-head"><h2>{t('panTitle')}</h2>
+        {pan && <span className={`rp-status ${tone}`}>{pan.status === 'verified' ? t('panVerified') : pan.status === 'failed' ? t('panFailed') : t('panPending')}</span>}</div>
+      {pan && <p style={{ margin: '0 0 8px' }}><b>{pan.masked}</b> · {pan.name}{pan.note && pan.status === 'failed' ? <><br /><span className="rp-hint">{pan.note}</span></> : null}</p>}
+      <p className="rp-hint" style={{ marginTop: 0 }}>🔒 {t('panWhy')}</p>
+      <ErrorNote error={err} />
+      {pan?.status !== 'verified' && (
+        <>
+          <div className="rp-field"><label htmlFor="pan-n">{t('panNumber')}</label>
+            <input id="pan-n" className="rp-input" autoCapitalize="characters" autoComplete="off" maxLength={10} placeholder="ABCDE1234F" style={{ letterSpacing: '.12em' }}
+              value={f.pan} onChange={(e) => setF({ ...f, pan: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '') })} /></div>
+          <div className="rp-field"><label htmlFor="pan-name">{t('panName')}</label>
+            <input id="pan-name" className="rp-input" autoComplete="name" value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} /></div>
+          <button className="rp-btn dark block" disabled={busy || !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(f.pan) || f.name.trim().length < 3} onClick={save}>{busy ? t('saving') : t('panSave')}</button>
+        </>
+      )}
+    </section>
+  );
+}
