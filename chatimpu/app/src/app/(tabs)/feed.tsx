@@ -103,7 +103,7 @@ export default function FeedScreen() {
         topInset={topInset}
         bottomInset={tabSpace}
         onIndexChange={setIndex}
-        overlay={<>{overlay}{index === 0 && items[0]?.type === 'story' && <SwipeHint top={Math.round(height * (prefs.language === 'en' ? 0.4 : 0.33)) - 140} label={tr('swipeUp')} />}</>}
+        overlay={<>{overlay}{index === 0 && items[0]?.type === 'story' && <SwipeHint top={Math.round(height * 0.34) - 120} label={tr('swipeUp')} />}</>}
       />
     </View>
   );
