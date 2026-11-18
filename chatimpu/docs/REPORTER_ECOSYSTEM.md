@@ -281,12 +281,13 @@ The local gateway is a **test tool only**:
 These are flagged, not settled. Please have an Indian lawyer or CA review them.
 
 - **Contributor agreement, media-rights licence, corrections policy, privacy notice and FAQ** (`admin/src/reporter/pages/Help.tsx`) are plain-language drafts.
-- **Digital Personal Data Protection Act, 2023:** consent notices, purpose limitation, retention periods (payment records vs. ID documents), data-principal rights, breach handling, and whether a Data Protection Officer is needed. ID documents and payout data are private and encrypted or masked, but **retention and deletion jobs still need to be defined**.
+- **Digital Personal Data Protection Act, 2023:** consent notices, purpose limitation, retention periods (payment records vs. ID documents), data-principal rights, breach handling, and whether a Data Protection Officer is needed. ID documents and payout data are private and encrypted or masked. Retention jobs now exist (`0006_jobs.sql`, SUPABASE_SETUP §6) with placeholder periods (ID images 30 days after the decision, stale drafts 90 days, notifications 180 days); **a lawyer should confirm the periods**.
 - **Aadhaar:** collecting Aadhaar copies is restricted. We request masked Aadhaar or other IDs and store only the last characters. Confirm this is acceptable for your use, or drop Aadhaar as an option.
-- **Tax:**
-  - payments to contributors may attract **TDS** (e.g. section 194J or 194C, depending on how the engagement is characterised), with PAN collection and Form 16A
-  - GST implications for the platform
-  - **None of this is implemented**: amounts are paid gross
+- **Tax:** TDS is implemented (§14) but **switched off**, with placeholder values (section 194J, 10% with PAN, 20% without, ₹50,000 a year). A CA must confirm:
+  - the section (194J or 194C, depending on how the engagement is characterised), the rates and the threshold;
+  - the catch-up treatment once the threshold is crossed;
+  - quarterly deposit and filing (challan, Form 26Q), and Form 16A certificates, which come from TRACES and are not generated here;
+  - GST implications for the platform.
 - **IT Rules 2021 / digital news publisher obligations:** grievance officer, code of ethics and the three-tier grievance mechanism. Contributor titles are deliberately not press accreditation.
 - **Payments:** RazorpayX terms, KYC for the business account, payout limits, and record-keeping for reconciliation.
 - **Content:**
@@ -301,5 +302,36 @@ These are flagged, not settled. Please have an Indian lawyer or CA review them.
 - SMS provider with **DLT-registered** templates for OTP (see SUPABASE_SETUP §4).
 - A support mailbox: the portal links to `reporters@chatimpu.com`, so change it in `Help.tsx`.
 - A cron schedule for `notify-dispatch`, and `EXPO_PUBLIC_REPORTER_PORTAL_URL` for the reader app.
-- Legal and tax review (§12), and a TDS decision before the first payouts.
+- Legal and tax review (§12). Confirm the TDS values with a CA and switch TDS on (Finance → Tax & reports) before the first payouts.
 - Backups: Supabase daily backups or PITR on a paid plan. Also export `wallet_ledger_entries`, `withdrawal_requests` and `payment_transactions` periodically for accounting.
+
+## 14. Tax: TDS, PAN and reports (`0007_tax.sql`)
+
+**Off by default.** Finance switches it on in **CMS → Finance → Tax & reports**, where the section, rates and yearly threshold are also set.
+
+**PAN:**
+- Reporters add their PAN in the portal under **Profile → PAN (for tax)**.
+- It is validated and encrypted server-side, stored masked (`••••••234F`), and one PAN can belong to one account only.
+- Finance verifies it; a finance user can't verify their own.
+- The full PAN is decrypted only for the audited **TDS worksheet (26Q)** export.
+
+**When TDS is deducted:**
+- When finance approves a withdrawal, per Indian financial year (April–March, IST).
+- Below the yearly threshold, nothing is deducted.
+- When a payout takes the reporter over the threshold, TDS applies to the whole year's amount not yet taxed, so earlier small payouts are caught up.
+- The rate is the PAN rate with a verified PAN, otherwise the no-PAN rate.
+
+**Money flow:**
+- The bank or RazorpayX receives the **net** amount.
+- The wallet ledger still settles the **gross**: the TDS part is paid to the government on the reporter's behalf.
+- The reporter sees "TDS −₹70 · You received ₹330". The payment notification and the bank CSV show net, gross and TDS.
+
+**Corrections:** a rejected, failed or reversed payout voids its TDS record. A retry is taxed afresh, without double counting.
+
+**Reports:**
+- Per-reporter FY report (masked PAN, gross, TDS, to bank, challan).
+- Monthly payouts (gross / TDS / net).
+- Challan recording per quarter.
+- The 26Q worksheet.
+
+**Tested** in `supabase/tests/tax.test.ts` and E2E step 20.

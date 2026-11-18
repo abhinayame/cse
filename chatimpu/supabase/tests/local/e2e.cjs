@@ -47,6 +47,8 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
   // Free the test phone number from earlier runs (GoTrue test OTP is fixed per number).
   sql(`update auth.users set phone = '91' || (8000000000 + floor(random()*999999999))::bigint where phone = '91${PHONE}'`);
   sql(`update app_settings set value = '30000' where key = 'withdrawal_threshold_paise'`);
+  sql(`update app_settings set value = 'false' where key = 'tds_enabled'`); // a failed earlier run may have left TDS on
+  sql(`update app_settings set value = '5000000' where key = 'tds_threshold_paise'`);
   const editor = await staff('Editor E2E', 'editor');
   const finance = await staff('Finance E2E', null, ['finance']); // finance-only: no newsroom role
 
@@ -306,14 +308,15 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
       await fp.getByRole('button', { name: 'Turn on' }).click();
       await toast(fp, /TDS turned on/);
       await rp.goto(`${BASE}/reporter/profile`);
+      await rp.locator('#pan-n').waitFor();
       if (await rp.getByRole('button', { name: 'English' }).count()) await rp.getByRole('button', { name: 'English' }).first().click();
-      await shot(rp, 'debug-pan');
+      await rp.getByText('PAN (for tax)').first().waitFor();
       await rp.getByLabel('PAN', { exact: true }).fill(pan);
       await rp.getByLabel('Name as on PAN card').fill(NAME);
       await rp.getByRole('button', { name: 'Save PAN' }).click();
       await toast(rp, /PAN saved/);
       assert.ok(!sql(`select ciphertext from reporter_tax_secrets where user_id = '${reporterId}'`).includes(pan), 'PAN encrypted at rest');
-      await fp.getByRole('button', { name: 'Tax & reports' }).click();
+      await fp.reload(); await fp.getByRole('button', { name: 'Tax & reports' }).click();
       await fp.locator('.row', { hasText: NAME }).getByRole('button', { name: 'Verify' }).click();
       await reasonDialog(fp, 'Matches Income-tax portal');
       await toast(fp, /PAN verified/);
@@ -327,11 +330,14 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
       await fp.locator('.filters select').first().selectOption('requested');
       await fp.locator('.queue-item', { hasText: NAME }).first().click();
       fp.once('dialog', (d) => d.accept()); await fp.getByRole('button', { name: 'Approve', exact: true }).click(); await toast(fp, /Approved/);
-      // this FY: ₹600 paid earlier + ₹400 = ₹1,000 > ₹100 → 10% (verified PAN) on ₹1,000 = ₹100; bank gets ₹300
-      assert.equal(sql(`select tds_paise || '/' || net_paise from withdrawal_requests where id = '${w}'`), '10000/30000');
+      // this FY: ₹300 paid earlier (untaxed; the failed ₹300 never left) + ₹400 = ₹700 > ₹100 threshold
+      // → catch-up: 10% (verified PAN) on the whole ₹700 = ₹70; the bank gets ₹330
+      assert.equal(sql(`select tds_paise || '/' || net_paise from withdrawal_requests where id = '${w}'`), '7000/33000');
+      await fp.locator('.filters select').first().selectOption('all');
+      await fp.locator('.queue-item', { hasText: NAME }).first().click();
       await fp.getByText('bank receives').first().waitFor();
       fp.once('dialog', (d) => d.accept()); await fp.getByRole('button', { name: /Send payout \(mock\)/ }).click(); await toast(fp, /waiting for confirmation/);
-      assert.equal(sql(`select amount_paise from payment_transactions where withdrawal_id = '${w}'`), '30000', 'provider sends the net amount');
+      assert.equal(sql(`select amount_paise from payment_transactions where withdrawal_id = '${w}'`), '33000', 'provider sends the net amount');
       await fp.getByRole('button', { name: 'processed', exact: true }).click(); await toast(fp, /Simulated processed/);
       await shot(fp, '22-finance-tds-paid');
       await fp.getByRole('button', { name: 'Tax & reports' }).click();
