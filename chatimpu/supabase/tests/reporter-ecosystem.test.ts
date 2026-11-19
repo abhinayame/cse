@@ -1,10 +1,11 @@
 import { test, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { activeReporter, actor, approve, fails, must, service, submitStory, SUMMARY, verifiedMethod, wallet, type Actor } from './helpers.ts';
+import { activeReporter, ageEarlierReports, actor, approve, fails, must, service, submitStory, SUMMARY, verifiedMethod, wallet, type Actor } from './helpers.ts';
 
 let admin: Actor, editor: Actor, moderatorWgl: Actor, finance: Actor, reader: Actor;
 
 before(async () => {
+  ageEarlierReports();
   // shared settings may have been changed by an earlier interrupted run
   must(await service.from('contribution_rates').update({ min_paise: 500, max_paise: 500, active: true }).eq('code', 'text_news'));
   must(await service.from('app_settings').upsert({ key: 'withdrawal_threshold_paise', value: 30000 }));

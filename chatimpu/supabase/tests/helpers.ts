@@ -3,6 +3,7 @@
  * every request goes through PostgREST + row-level security exactly as in production.
  * Admin setup (roles, permissions) uses the service-role key, as an operator would.
  */
+import { execFileSync } from 'node:child_process';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 export const URL = process.env.SUPABASE_URL ?? 'http://127.0.0.1:54321';
@@ -69,9 +70,12 @@ let n = 0;
 /** Create and submit a story; returns the submission row (now under review). */
 export async function submitStory(r: Actor, over: Record<string, unknown> = {}) {
   n++;
+  // Every story is a different incident (unique place words), so the duplicate auto-reject (0008) leaves them alone.
+  const w = () => Array.from({ length: 2 }, () => Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 7)).join(' ');
+  const place = w(), thing = w();
   const row = must(await r.db.from('citizen_reports').insert({
-    headline: `Ward ${n} ${run}: streetlights restored on the main road after residents complained ${n}`,
-    body: 'Residents of the ward said the streetlights on the main road had been off for two weeks. Municipal staff replaced the faulty cables on Monday evening.',
+    headline: `Ward ${n} ${run}: ${place} ${thing} ${w()}`,
+    body: `${place} ${thing}: ${Array.from({ length: 8 }, w).join(', ')}.`,
     lang: 'en', category_id: 'education', district_id: 'hyd', mandal_id: 'hyd-amp', rights_confirmed: true, status: 'draft', ...over,
   }).select('*').single()) as Record<string, any>;
   return must(await r.db.from('citizen_reports').update({ status: 'submitted' }).eq('id', row.id).select('*').single()) as Record<string, any>;
@@ -93,4 +97,13 @@ export async function verifiedMethod(r: Actor, finance: Actor, kind: 'upi' | 'ba
   must(await service.from('payout_method_secrets').insert({ method_id: m.id, ciphertext: 'test-ciphertext' }));
   must(await finance.db.rpc('verify_payout_method', { p_id: m.id, p_status: 'verified', p_note: 'test' }));
   return m.id;
+}
+
+/**
+ * Test isolation for the duplicate auto-reject (0008): earlier test runs leave identical stories behind,
+ * which are real duplicates of this run's. Move them outside the comparison window. Needs psql (PGURL).
+ */
+export function ageEarlierReports() {
+  const pg = process.env.PGURL ?? 'postgres://postgres@127.0.0.1:54329/sb';
+  execFileSync('psql', [pg, '-tAq', '-c', "update citizen_reports set submitted_at = submitted_at - interval '30 days' where submitted_at > now() - interval '30 days'"]);
 }

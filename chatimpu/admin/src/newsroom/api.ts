@@ -24,7 +24,7 @@ export interface Report {
   category_id: string; lang: string; district_id: string; mandal_id: string | null; locality: string | null; incident_location: string | null; incident_at: string | null;
   source_notes: string | null; assignment_id: string | null; priority: string; is_sensitive: boolean; sensitivity_reasons: string[]; human_verified: boolean;
   verification_notes: string | null; duplicate_candidates: { type: string; id: string; code?: string; headline: string; score: number }[]; ai_flags: string[];
-  rights_confirmed: boolean; correction_note: string | null; rejection_reason: string | null; review_note: string | null; story_id: string | null; media: string[];
+  rights_confirmed: boolean; duplicate_of: string | null; duplicate_score: number | null; correction_note: string | null; rejection_reason: string | null; review_note: string | null; story_id: string | null; media: string[];
   submitted_at: string | null; updated_at: string;
 }
 export interface ReporterLite { user_id: string; full_name: string; status: string; category: string; district_id: string }
@@ -231,3 +231,7 @@ export async function exportTdsWorksheet(fy: string, quarter?: string) {
   Object.assign(document.createElement('a'), { href: url, download: `chatimpu-tds-${fy}${quarter ? `-${quarter}` : ''}.csv` }).click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
+
+// ── Duplicate reports (0008 §1) ─────────────────────────────────────────────
+export const reinstateDuplicate = (id: string, note: string) => rpc('reinstate_duplicate', { p_id: id, p_note: note });
+export const codeOf = async (id: string) => ((ok(await db().from('citizen_reports').select('code').eq('id', id).maybeSingle()) as { code: string } | null)?.code ?? null);

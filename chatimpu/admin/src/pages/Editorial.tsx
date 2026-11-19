@@ -13,7 +13,7 @@ import { ai, type Moderation as Mod } from '../lib/ai';
 import { CATS, cap, district, mandal, wordCount } from '../lib/format';
 import { supabase } from '../lib/supabase';
 import {
-  QUEUES, approveReport, editReport, loadRates, loadReports, paise, promoteCover, reportCounts, reportMedia, reporterStats, reportersByIds, reviewHistory, setStatus, when,
+  QUEUES, approveReport, codeOf, editReport, loadRates, loadSettings, reinstateDuplicate, setSetting, loadReports, paise, promoteCover, reportCounts, reportMedia, reporterStats, reportersByIds, reviewHistory, setStatus, when,
   type Rate, type Report, type ReporterLite, type Review, type SubMedia, db, ok,
 } from '../newsroom/api';
 import { NeedsBackend, Status, label, useReasonDialog } from '../newsroom/ui';
@@ -64,6 +64,7 @@ function Desk() {
   return (
     <>
       <PageHead kicker="Reporter network" title="Editorial desk">
+        <DuplicateRules />
         <div className="tabs">{TABS.map(([k, l]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setParams({ q: k })}>{l} ({counts[k] ?? '·'})</button>)}</div>
       </PageHead>
       {err && <div className="banner" role="alert">⚠ {err}</div>}
@@ -83,7 +84,7 @@ function Desk() {
                 <div className="row" style={{ marginTop: 4, gap: 4 }}>
                   {r.priority !== 'normal' && <Status s={r.priority} />}
                   {r.is_sensitive && <span className={`pill ${r.human_verified ? 'green' : 'red'}`}>{r.human_verified ? 'Sensitive · verified' : 'Sensitive'}</span>}
-                  {r.duplicate_candidates?.length > 0 && <span className="pill amber">Possible duplicate</span>}
+                  {r.duplicate_of ? <span className="pill red">Duplicate · auto-rejected</span> : r.duplicate_candidates?.length > 0 && <span className="pill amber">Possible duplicate</span>}
                   {r.assignment_id && <span className="pill blue">Assignment</span>}
                 </div>
               </div>
@@ -348,7 +349,17 @@ function Detail({ r, reporter, onChange }: { r: Report; reporter?: ReporterLite;
         </div>
       )}
       {r.status === 'correction_required' && <div className="warn-box"><b>Waiting for the reporter:</b> {r.correction_note}</div>}
-      {r.status === 'rejected' && <div className="warn-box"><b>Rejected:</b> {r.rejection_reason}</div>}
+      {r.status === 'rejected' && r.duplicate_of ? (
+        <div className="warn-box">
+          <b>Auto-rejected as a duplicate</b> ({Math.round(Number(r.duplicate_score ?? 0) * 100)}% match) of <DupLink id={r.duplicate_of} />, which was reported earlier by another contributor.
+          <div className="row" style={{ marginTop: 8 }}>
+            <button className="btn sm dark" disabled={!!busy} onClick={async () => {
+              const why = await ask('Not a duplicate — reinstate', { hint: 'Explain why this is a different incident. The report goes back to review and the reporter is told.' });
+              if (why) await run('reinstate', () => reinstateDuplicate(r.id, why), 'Back in review');
+            }}>Not a duplicate — reinstate</button>
+          </div>
+        </div>
+      ) : r.status === 'rejected' && <div className="warn-box"><b>Rejected:</b> {r.rejection_reason}</div>}
       {r.story_id && <div><Link className="btn ghost sm" to={`/stories/${r.story_id}`}>Open the story in the editor →</Link></div>}
 
       <div>
@@ -363,5 +374,51 @@ function Detail({ r, reporter, onChange }: { r: Report; reporter?: ReporterLite;
         </ul>
       </div>
     </div>
+  );
+}
+
+function DupLink({ id }: { id: string }) {
+  const [code, setCode] = useState<string | null>(null);
+  useEffect(() => { codeOf(id).then(setCode).catch(() => {}); }, [id]);
+  return <Link to={`/editorial?q=review&id=${id}`}>{code ?? 'the earlier report'}</Link>;
+}
+
+/** Duplicate auto-reject settings (editors and super admins). */
+function DuplicateRules() {
+  const { toast, session } = useStore();
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ on: true, pct: '40', hours: '48' });
+  useEffect(() => {
+    if (!open) return;
+    loadSettings(['duplicate_auto_reject', 'duplicate_match_percent', 'duplicate_window_hours']).then((s) => setF({
+      on: s.duplicate_auto_reject === true || s.duplicate_auto_reject === 'true', pct: String(s.duplicate_match_percent ?? 40), hours: String(s.duplicate_window_hours ?? 48),
+    })).catch((e) => toast(`⚠ ${e.message}`));
+  }, [open, toast]);
+  if (!['super_admin', 'editor'].includes(session.role)) return null;
+  const save = async () => {
+    try {
+      await setSetting('duplicate_auto_reject', f.on); await setSetting('duplicate_match_percent', Number(f.pct)); await setSetting('duplicate_window_hours', Number(f.hours));
+      toast('Duplicate rules saved'); setOpen(false);
+    } catch (e) { toast(`⚠ ${(e as Error).message}`); }
+  };
+  return (
+    <>
+      <button className="btn ghost" onClick={() => setOpen(true)}>Duplicate rules</button>
+      {open && (
+        <div className="modal-bg" onClick={() => setOpen(false)}>
+          <div className="modal grid" style={{ gap: 12 }} role="dialog" aria-modal="true" aria-label="Duplicate rules" onClick={(e) => e.stopPropagation()}>
+            <h2 style={{ fontSize: 20 }}>Duplicate reports</h2>
+            <p className="muted" style={{ margin: 0, fontSize: 13 }}>When two <b>different reporters</b> send the same incident from the same district, the <b>earlier</b> report is kept and the later one is rejected automatically with the earlier report's code. Matching compares headline wording and shared keywords (Telugu and English, including case endings). The same reporter sending twice is only flagged.</p>
+            <label className="row" style={{ gap: 8 }}><input type="checkbox" checked={f.on} onChange={(e) => setF({ ...f, on: e.target.checked })} />Auto-reject the later duplicate</label>
+            <div className="row" style={{ flexWrap: 'wrap' }}>
+              <div className="field" style={{ margin: 0 }}><label htmlFor="dup-p">Match level %</label><input id="dup-p" className="input" style={{ width: 100 }} type="number" min={30} max={95} value={f.pct} onChange={(e) => setF({ ...f, pct: e.target.value })} /></div>
+              <div className="field" style={{ margin: 0 }}><label htmlFor="dup-h">Compare within (hours)</label><input id="dup-h" className="input" style={{ width: 100 }} type="number" min={1} max={168} value={f.hours} onChange={(e) => setF({ ...f, hours: e.target.value })} /></div>
+            </div>
+            <p className="faint" style={{ margin: 0, fontSize: 12 }}>Same incident usually scores 45–55%, different incidents 15–25%. Lower = stricter (more rejections).</p>
+            <div className="row" style={{ justifyContent: 'flex-end' }}><button className="btn ghost" onClick={() => setOpen(false)}>Cancel</button><button className="btn dark" onClick={save}>Save</button></div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
