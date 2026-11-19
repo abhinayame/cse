@@ -14,7 +14,7 @@ import { storyText } from '@/lib/text';
 import { timeAgo } from '@/lib/time';
 import { usePrefs } from '@/store/prefs';
 import { useT } from '@/i18n';
-import { categoryColors, radius, shadow, useTheme } from '@/theme';
+import { categoryColors, palette, radius, shadow, useTheme } from '@/theme';
 import type { AlertKind, LocalAlert } from '@/data/types';
 
 export default function Local() {
@@ -45,6 +45,15 @@ export default function Local() {
           <Tap key={v} onPress={() => setView(v)} style={{ flex: 1, height: 38, borderRadius: radius.pill, alignItems: 'center', justifyContent: 'center', flexDirection: 'row', gap: 6, backgroundColor: view === v ? t.colors.surface : 'transparent' }}>
             <Icon name={v === 'map' ? 'map' : 'list'} size={16} color={view === v ? t.colors.text : t.colors.textMuted} />
             <Txt v="label" color={view === v ? t.colors.text : t.colors.textMuted}>{v === 'map' ? tr('mapView') : tr('listView')}</Txt>
+          </Tap>
+        ))}
+      </View>
+
+      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 20, marginTop: 14 }}>
+        {([['/local-info', 'call', lang === 'te' ? 'హెల్ప్‌లైన్లు, ధరలు' : 'Helplines & prices', palette.red], ['/community', 'people', lang === 'te' ? 'కమ్యూనిటీ బోర్డు' : 'Community board', palette.navy]] as const).map(([to, icon, label, c]) => (
+          <Tap key={to} onPress={() => router.push(to)} scaleTo={0.97} accessibilityRole="button" style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: radius.lg, backgroundColor: t.colors.surface, borderWidth: 1, borderColor: t.colors.border }}>
+            <View style={{ width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: c + '1A' }}><Icon name={icon} size={18} color={c} /></View>
+            <Txt v="label" style={{ flex: 1 }} numberOfLines={2}>{label}</Txt>
           </Tap>
         ))}
       </View>

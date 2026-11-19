@@ -387,3 +387,20 @@ When two **different reporters** send the same incident from the same district w
 **Copyright:** every source needs a licence note. Summarising other outlets' articles without permission may infringe copyright, so add only sources you may republish.
 
 **Not yet done:** we haven't added any real feed URLs, because they need checking first. Add yours in the CMS.
+
+## 16. Help, trust and community (`0009_community.sql`)
+
+| Feature | Readers / reporters see | Staff work in the CMS |
+|---|---|---|
+| **FAQs** (Telugu + English) | App: Profile → Help & complaints (reader FAQ); Reporter hub → Help (reporter FAQ). Web portal → Help. | **Help centre**: add, edit, reorder or hide questions. |
+| **Reporter Academy** | 5 short lessons (writing local news, checking facts, photos and consent, law and sensitive news, safety and honesty), each with a quiz. Answers are marked on the server; the app never receives them. You must get every question right to pass a lesson. | **Help centre → Reporter Academy**: each reporter's progress. Ask new reporters to finish it before you activate them. |
+| **Report this story** | Story page → "Report this story" (7 reasons). One open report per signed-in reader per story. | **Corrections & grievances → Story reports**. Editors are alerted when a story gets 3 reports. *Mark corrected* closes every report on the story and adds a dated correction note, which readers see on the story. *Dismiss* needs a reason. |
+| **Grievances** | Help → File a grievance (no account needed). Each gets a `GRV-YYMM-00000` code, and the reader is told the deadlines. | **Corrections & grievances → Grievances**: countdowns to the 24-hour acknowledgement and 15-day resolution deadlines, with overdue items in red. Resolving or rejecting needs an outcome, which is sent to the complainant. |
+| **Grievance officer** | Help page shows the name and contact details. | Only a Super Admin can edit them. **Fill these in before launch.** |
+| **Helplines** | Local tab → Helplines & prices. National numbers (112, 100, 108, 101, 181, 1098, 1930) are built in, and each is tap-to-call. | **Community & local info → Helplines**: district numbers, saved with the date you checked them. |
+| **Daily prices** | Same screen: today's prices with an up or down change and the source. If none were entered, it says so. | **Daily prices**: gold, silver, fuel, LPG, vegetables, meat, eggs and crop prices per district, each with a required source. Leaving an item empty hides it, so the app never shows a guessed price. |
+| **Community board** | Local tab → Community board: obituaries, wishes, jobs, buy & sell, lost & found, events and announcements. Posting needs sign-in and a consent tick. Up to 3 posts a day. | **Community board**: approve, reject (reason required) or take down. Posts expire automatically after 3–21 days depending on type. |
+
+**Legal:** The IT Rules 2021 (Code of Ethics for digital news publishers) require a grievance officer, acknowledgement within 24 hours and a decision within 15 days. Have a media lawyer confirm your obligations, including registering with the Ministry of Information and Broadcasting.
+
+**Matrimony:** left out on purpose. It brings privacy, verification and fraud risks that a news app should not carry.

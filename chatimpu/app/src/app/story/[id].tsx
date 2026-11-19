@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View, useWindowDimensions } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
@@ -13,6 +13,7 @@ import { storyText } from '@/lib/text';
 import { timeAgo } from '@/lib/time';
 import { speech } from '@/lib/speech';
 import { shareStoryImage } from '@/lib/share';
+import { supabase } from '@/lib/supabase';
 import { useSpeaking } from '@/hooks/useSpeaking';
 import { usePrefs } from '@/store/prefs';
 import { useLibrary } from '@/store/library';
@@ -38,6 +39,11 @@ export default function StoryDetail() {
   const speaking = useSpeaking();
   const [comments, setComments] = useState(SAMPLE_COMMENTS);
   const [draft, setDraft] = useState('');
+  const [correction, setCorrection] = useState<{ note: string; at: string } | null>(null);
+  useEffect(() => {
+    supabase?.from('stories').select('correction_note, corrected_at').eq('id', id).maybeSingle()
+      .then(({ data }) => data?.correction_note && setCorrection({ note: data.correction_note, at: data.corrected_at }), () => {});
+  }, [id]);
   const story = storyById(id);
   if (!story) return null;
   const txt = storyText(story, lang);
@@ -72,6 +78,12 @@ export default function StoryDetail() {
               <Txt v="title" lang={txt.lang === 'en' ? 'te' : 'en'}>{other.headline}</Txt>
             </View>
           )}
+          {correction && (
+            <View accessibilityRole="summary" style={{ padding: 12, borderRadius: radius.md, borderLeftWidth: 3, borderLeftColor: palette.navy, backgroundColor: palette.navyTint, gap: 4 }}>
+              <Txt v="overline" color={palette.navy}>{lang === 'te' ? 'సవరణ' : 'Correction'} · {new Date(correction.at).toLocaleDateString(lang === 'te' ? 'te-IN' : 'en-IN')}</Txt>
+              <Txt v="bodySm">{correction.note}</Txt>
+            </View>
+          )}
           <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 4 }}>
             <Tap onPress={() => (speaking === story.id ? speech.stop() : speech.play([{ id: story.id, text: `${txt.headline}. ${txt.summary}`, lang: txt.lang }]))}
               style={{ flexDirection: 'row', alignItems: 'center', gap: 6, height: 40, paddingHorizontal: 14, borderRadius: radius.pill, borderWidth: 1, borderColor: t.colors.accent }}>
@@ -80,6 +92,10 @@ export default function StoryDetail() {
             </Tap>
             <ReactionButton story={story} />
           </View>
+          <Tap onPress={() => router.push(`/flag/${story.id}`)} accessibilityRole="button" style={{ flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', paddingVertical: 6 }}>
+            <Icon name="flag-outline" size={15} color={t.colors.textMuted} />
+            <Txt v="caption" muted>{lang === 'te' ? 'ఈ వార్తపై ఫిర్యాదు / తప్పు తెలియజేయండి' : 'Report this story / suggest a correction'}</Txt>
+          </Tap>
 
           <Txt v="h3" style={{ marginTop: 16 }}>{tr('comments', { n: story.comments + comments.length - SAMPLE_COMMENTS.length })}</Txt>
           {comments.map((c, i) => (

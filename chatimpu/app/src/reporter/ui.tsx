@@ -1,7 +1,7 @@
 /** Shared building blocks for the reporter hub screens (app theme, red · navy · white). */
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, TextInput, View, type TextInputProps, type ViewStyle } from 'react-native';
-import { router } from 'expo-router';
+import { router, usePathname } from 'expo-router';
 import { Icon, Tap, Txt, type IconName } from '@/components/ui';
 import { Screen } from '@/components/Screen';
 import { OtpLogin } from '@/components/OtpLogin';
@@ -34,6 +34,9 @@ export function ReporterProvider({ children }: { children: ReactNode }) {
     const sub = supabase?.auth.onAuthStateChange(() => { reload(); });
     return () => sub?.data.subscription.unsubscribe();
   }, [reload]);
+  // Help and the Reporter Academy are open to everyone (people read them before registering).
+  const path = usePathname();
+  if (/^\/reporter\/(help|academy)/.test(path)) return <>{children}</>;
   return <GateView gate={gate} reload={reload}>{children}</GateView>;
 }
 
@@ -103,7 +106,7 @@ export function Field({ label, hint, ...input }: TextInputProps & { label: strin
     <View style={{ gap: 6, marginBottom: 14 }}>
       <Txt v="label">{label}</Txt>
       <TextInput placeholderTextColor={t.colors.textFaint} accessibilityLabel={label} {...input}
-        style={[{ borderRadius: radius.md, borderWidth: 1, borderColor: t.colors.border, backgroundColor: t.colors.bg, color: t.colors.text, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, minHeight: 48 }, input.multiline && { minHeight: 110, textAlignVertical: 'top' }, input.style]} />
+        style={[{ borderRadius: radius.md, borderWidth: 1, borderColor: t.colors.border, backgroundColor: t.colors.bg, color: t.colors.text, paddingHorizontal: 14, paddingVertical: 12, fontSize: 16, minHeight: 48, fontFamily: t.fonts.body }, input.multiline && { minHeight: 110, textAlignVertical: 'top' }, input.style]} />
       {hint && <Txt v="caption" muted>{hint}</Txt>}
     </View>
   );

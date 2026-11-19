@@ -1,0 +1,493 @@
+{
+    "faqs": [
+        {
+            "id": "u-loc",
+            "sort": 10,
+            "audience": "reader",
+            "category": "Using the app",
+            "answer_en": "Profile → Location. Choose your district and mandal; the feed and the Local tab then show news from your area first.",
+            "answer_te": "ప్రొఫైల్ → ప్రాంతం. మీ జిల్లా, మండలం ఎంచుకోండి; ఫీడ్, లోకల్ ట్యాబ్ మీ ప్రాంత వార్తలను ముందుగా చూపిస్తాయి.",
+            "category_te": "యాప్ వాడకం",
+            "question_en": "How do I see news from my village or mandal?",
+            "question_te": "నా గ్రామం లేదా మండలం వార్తలు ఎలా చూడాలి?"
+        },
+        {
+            "id": "u-lang",
+            "sort": 20,
+            "audience": "reader",
+            "category": "Using the app",
+            "answer_en": "Profile → Language. Telugu, English, Hindi and other Indian languages are available.",
+            "answer_te": "ప్రొఫైల్ → భాష. తెలుగు, ఇంగ్లీష్, హిందీ, ఇతర భారతీయ భాషలు అందుబాటులో ఉన్నాయి.",
+            "category_te": "యాప్ వాడకం",
+            "question_en": "How do I change the language?",
+            "question_te": "భాష ఎలా మార్చాలి?"
+        },
+        {
+            "id": "u-wrong",
+            "sort": 30,
+            "audience": "reader",
+            "category": "Trust & corrections",
+            "answer_en": "Open the story and tap \"Report this story\". Choose what is wrong and add details. Editors review every report; if a story is corrected, a dated correction note is added.",
+            "answer_te": "వార్తను తెరిచి \"ఈ వార్తపై ఫిర్యాదు\" నొక్కండి. ఏది తప్పో ఎంచుకుని వివరాలు రాయండి. ప్రతి ఫిర్యాదును ఎడిటర్లు పరిశీలిస్తారు; సవరిస్తే తేదీతో సవరణ నోట్ జోడిస్తాం.",
+            "category_te": "నమ్మకం, సవరణలు",
+            "question_en": "I think a story is wrong. What can I do?",
+            "question_te": "ఒక వార్త తప్పు అనిపిస్తోంది. ఏం చేయాలి?"
+        },
+        {
+            "id": "u-griev",
+            "sort": 40,
+            "audience": "reader",
+            "category": "Trust & corrections",
+            "answer_en": "Profile → Help → Grievance. We acknowledge within 24 hours and resolve within 15 days, as required for digital news publishers. You get a GRV code to track it.",
+            "answer_te": "ప్రొఫైల్ → సహాయం → ఫిర్యాదు. 24 గంటల్లో అందినట్లు తెలియజేసి, 15 రోజుల్లో పరిష్కరిస్తాం. ట్రాక్ చేయడానికి GRV కోడ్ వస్తుంది.",
+            "category_te": "నమ్మకం, సవరణలు",
+            "question_en": "How do I file a formal complaint (grievance)?",
+            "question_te": "అధికారిక ఫిర్యాదు (గ్రీవెన్స్) ఎలా చేయాలి?"
+        },
+        {
+            "id": "u-tip",
+            "sort": 50,
+            "audience": "reader",
+            "category": "Trust & corrections",
+            "answer_en": "Yes: post it on the Community board, or become a reporter to send full stories and earn money for approved news.",
+            "answer_te": "అవును: కమ్యూనిటీ బోర్డులో పోస్ట్ చేయండి, లేదా రిపోర్టర్‌గా చేరి పూర్తి వార్తలు పంపి ఆమోదం పొందిన వార్తలకు డబ్బు పొందండి.",
+            "category_te": "నమ్మకం, సవరణలు",
+            "question_en": "Can I send a news tip without becoming a reporter?",
+            "question_te": "రిపోర్టర్ కాకుండా వార్త సమాచారం పంపవచ్చా?"
+        },
+        {
+            "id": "u-community",
+            "sort": 60,
+            "audience": "reader",
+            "category": "Community board",
+            "answer_en": "Local tab → Community board → Post. Every post is checked by our team before it appears and stays up for a limited time. Do not share other people's phone numbers or photos without their consent.",
+            "answer_te": "లోకల్ ట్యాబ్ → కమ్యూనిటీ బోర్డు → పోస్ట్. ప్రతి పోస్ట్‌ను మా బృందం తనిఖీ చేశాకే కనిపిస్తుంది, కొంతకాలం మాత్రమే ఉంటుంది. ఇతరుల ఫోన్ నంబర్లు, ఫోటోలు వారి అనుమతి లేకుండా పెట్టకండి.",
+            "category_te": "కమ్యూనిటీ బోర్డు",
+            "question_en": "How do I post an obituary, wishes, a job or something to sell?",
+            "question_te": "శ్రద్ధాంజలి, శుభాకాంక్షలు, ఉద్యోగం లేదా అమ్మకం ఎలా పోస్ట్ చేయాలి?"
+        },
+        {
+            "id": "u-privacy",
+            "sort": 70,
+            "audience": "reader",
+            "category": "Privacy",
+            "answer_en": "Your mobile number (if you sign in), language, location and interests to personalise news, and what you read to improve recommendations. You can ask us to delete your account from Help & support.",
+            "answer_te": "మీరు సైన్ ఇన్ చేస్తే మొబైల్ నంబర్, వార్తలను మీకు అనుగుణంగా చూపడానికి భాష, ప్రాంతం, ఆసక్తులు, సిఫార్సులు మెరుగుపరచడానికి మీరు చదివినవి. సహాయం విభాగం ద్వారా మీ ఖాతా తొలగించమని కోరవచ్చు.",
+            "category_te": "గోప్యత",
+            "question_en": "What data do you keep about me?",
+            "question_te": "నా గురించి ఏ సమాచారం ఉంచుతారు?"
+        },
+        {
+            "id": "r-join",
+            "sort": 10,
+            "audience": "reporter",
+            "category": "Getting started",
+            "answer_en": "Anyone 18 or older who lives in the area they report on. Register in the app (Profile → Reporter hub) or at /reporter, add an identity document, and finish the Reporter Academy. An editor then activates your account.",
+            "answer_te": "18 ఏళ్లు నిండి, తాము రిపోర్ట్ చేసే ప్రాంతంలో నివసించే ఎవరైనా. యాప్‌లో (ప్రొఫైల్ → రిపోర్టర్ హబ్) నమోదు చేసుకుని, గుర్తింపు పత్రం జోడించి, రిపోర్టర్ అకాడమీ పూర్తి చేయండి. తర్వాత ఎడిటర్ మీ ఖాతాను సక్రియం చేస్తారు.",
+            "category_te": "ప్రారంభం",
+            "question_en": "Who can become a Chatimpu reporter?",
+            "question_te": "చాటింపు రిపోర్టర్ ఎవరు కావచ్చు?"
+        },
+        {
+            "id": "r-id",
+            "sort": 20,
+            "audience": "reporter",
+            "category": "Getting started",
+            "answer_en": "Masked Aadhaar (only the last 4 digits visible), voter ID, PAN, driving licence, press or college ID. Documents are stored privately, seen only by verification staff, and the image is deleted 30 days after the decision.",
+            "answer_te": "మాస్క్ చేసిన ఆధార్ (చివరి 4 అంకెలు మాత్రమే), ఓటర్ ఐడీ, పాన్, డ్రైవింగ్ లైసెన్స్, ప్రెస్ లేదా కళాశాల ఐడీ. పత్రాలు గోప్యంగా ఉంటాయి, ధృవీకరణ సిబ్బంది మాత్రమే చూస్తారు, నిర్ణయం తర్వాత 30 రోజుల్లో చిత్రం తొలగించబడుతుంది.",
+            "category_te": "ప్రారంభం",
+            "question_en": "Which ID documents are accepted? Is my ID safe?",
+            "question_te": "ఏ గుర్తింపు పత్రాలు అంగీకరిస్తారు? నా ఐడీ సురక్షితమేనా?"
+        },
+        {
+            "id": "r-title",
+            "sort": 30,
+            "audience": "reporter",
+            "category": "Getting started",
+            "answer_en": "No. Contributor titles (Community Contributor, Area Correspondent…) describe your role on Chatimpu only. They are not press accreditation, and you must not use the Chatimpu name to seek privileges from police or officials.",
+            "answer_te": "కాదు. కంట్రిబ్యూటర్ హోదాలు చాటింపులో మీ పాత్రను మాత్రమే తెలుపుతాయి. ఇవి ప్రెస్ అక్రిడిటేషన్ కాదు. పోలీసులు లేదా అధికారుల నుంచి ప్రత్యేక సౌకర్యాల కోసం చాటింపు పేరు ఉపయోగించకూడదు.",
+            "category_te": "ప్రారంభం",
+            "question_en": "Am I a journalist with a press card?",
+            "question_te": "నేను ప్రెస్ కార్డు ఉన్న జర్నలిస్టునా?"
+        },
+        {
+            "id": "r-what",
+            "sort": 40,
+            "audience": "reporter",
+            "category": "Sending news",
+            "answer_en": "Things that happened in your area that local people need to know: civic problems, accidents, schools, hospitals, farmers, jobs, events, government notices. Only send what you saw yourself or confirmed with a reliable source.",
+            "answer_te": "మీ ప్రాంతంలో జరిగిన, స్థానికులు తెలుసుకోవాల్సిన విషయాలు: పౌర సమస్యలు, ప్రమాదాలు, పాఠశాలలు, ఆసుపత్రులు, రైతులు, ఉద్యోగాలు, కార్యక్రమాలు, ప్రభుత్వ ప్రకటనలు. మీరు స్వయంగా చూసినవి లేదా నమ్మకమైన వ్యక్తితో నిర్ధారించుకున్నవి మాత్రమే పంపండి.",
+            "category_te": "వార్తలు పంపడం",
+            "question_en": "What kind of news should I send?",
+            "question_te": "ఎలాంటి వార్తలు పంపాలి?"
+        },
+        {
+            "id": "r-never",
+            "sort": 50,
+            "audience": "reporter",
+            "category": "Sending news",
+            "answer_en": "Rumours, forwarded WhatsApp messages, other outlets' photos or text, names or photos of victims of sexual offences or children in sensitive cases, hate speech, and anything that can inflame religious or caste tension. Fabricated news leads to suspension and loss of earnings.",
+            "answer_te": "పుకార్లు, ఫార్వర్డ్ చేసిన వాట్సాప్ సందేశాలు, ఇతర పత్రికల ఫోటోలు లేదా వార్తలు, లైంగిక నేరాల బాధితులు లేదా సున్నితమైన కేసుల్లో పిల్లల పేర్లు, ఫోటోలు, ద్వేషపూరిత మాటలు, మత లేదా కుల ఉద్రిక్తతలు రేపే విషయాలు. కల్పిత వార్తలు పంపితే ఖాతా నిలిపివేసి ఆదాయం రద్దు చేస్తాం.",
+            "category_te": "వార్తలు పంపడం",
+            "question_en": "What must I never send?",
+            "question_te": "ఏవి ఎప్పుడూ పంపకూడదు?"
+        },
+        {
+            "id": "r-dup",
+            "sort": 60,
+            "audience": "reporter",
+            "category": "Sending news",
+            "answer_en": "The earlier report is kept. If another reporter already sent the same incident from your district in the last 48 hours, yours is rejected automatically and you are told which report came first. Send fast, but only after checking the facts.",
+            "answer_te": "ముందు వచ్చిన వార్తనే పరిగణిస్తాం. గత 48 గంటల్లో మీ జిల్లా నుంచి అదే సంఘటనను మరో రిపోర్టర్ పంపితే, మీది ఆటోమేటిక్‌గా తిరస్కరించబడుతుంది, ఏది ముందు వచ్చిందో మీకు తెలియజేస్తాం. వేగంగా పంపండి, కానీ నిజాలు తనిఖీ చేశాకే.",
+            "category_te": "వార్తలు పంపడం",
+            "question_en": "Someone else sent the same news. What happens?",
+            "question_te": "అదే వార్తను మరొకరు పంపారు. ఏమవుతుంది?"
+        },
+        {
+            "id": "r-correct",
+            "sort": 70,
+            "audience": "reporter",
+            "category": "Sending news",
+            "answer_en": "Open the story from My news, read the editor's note, fix or add what was asked, and send it again. It goes back to the same editor.",
+            "answer_te": "\"నా వార్తలు\"లో ఆ వార్తను తెరిచి, ఎడిటర్ సూచన చదివి, అడిగినది సరిచేసి లేదా జోడించి మళ్ళీ పంపండి. అది అదే ఎడిటర్ వద్దకు వెళ్తుంది.",
+            "category_te": "వార్తలు పంపడం",
+            "question_en": "An editor asked for a correction. What should I do?",
+            "question_te": "ఎడిటర్ సవరణ అడిగారు. ఏం చేయాలి?"
+        },
+        {
+            "id": "r-sources",
+            "sort": 80,
+            "audience": "reporter",
+            "category": "Sending news",
+            "answer_en": "Never. The private \"Sources & evidence\" box is seen only by editors and is never published or shared.",
+            "answer_te": "ఎప్పుడూ ప్రచురించం. గోప్యమైన \"ఆధారాలు\" బాక్స్‌ను ఎడిటర్లు మాత్రమే చూస్తారు.",
+            "category_te": "వార్తలు పంపడం",
+            "question_en": "Will my sources be published?",
+            "question_te": "నా సోర్సెస్ ప్రచురిస్తారా?"
+        },
+        {
+            "id": "r-pay",
+            "sort": 90,
+            "audience": "reporter",
+            "category": "Earnings & payments",
+            "answer_en": "Only approved stories earn, at the current rate card (shown in Wallet → Earnings): for example text news, original photos, original videos and detailed reports have different amounts. Special assignments pay the amount shown on the assignment.",
+            "answer_te": "ఆమోదం పొందిన వార్తలకు మాత్రమే ప్రస్తుత రేట్ కార్డ్ ప్రకారం చెల్లిస్తాం (వాలెట్ → ఆదాయంలో చూడండి). వచన వార్త, అసలు ఫోటో, అసలు వీడియో, వివరణాత్మక కథనాలకు వేర్వేరు మొత్తాలు. ప్రత్యేక అసైన్‌మెంట్లకు అందులో చూపిన మొత్తం.",
+            "category_te": "ఆదాయం, చెల్లింపులు",
+            "question_en": "How much do I earn?",
+            "question_te": "ఎంత సంపాదిస్తాను?"
+        },
+        {
+            "id": "r-withdraw",
+            "sort": 100,
+            "audience": "reporter",
+            "category": "Earnings & payments",
+            "answer_en": "When your available balance reaches the minimum (₹300 unless changed). Add a UPI ID or bank account, wait for it to be verified, then request a withdrawal. Money for stories still under review is \"pending\" and cannot be withdrawn yet.",
+            "answer_te": "అందుబాటు బ్యాలెన్స్ కనీస మొత్తానికి (మార్చకపోతే ₹300) చేరినప్పుడు. UPI ID లేదా బ్యాంక్ ఖాతా జోడించి, ధృవీకరణ కోసం వేచి ఉండి, ఉపసంహరణ అభ్యర్థించండి. పరిశీలనలో ఉన్న వార్తల మొత్తం \"పెండింగ్\", ఇంకా తీసుకోలేరు.",
+            "category_te": "ఆదాయం, చెల్లింపులు",
+            "question_en": "When can I withdraw money?",
+            "question_te": "డబ్బు ఎప్పుడు తీసుకోవచ్చు?"
+        },
+        {
+            "id": "r-failed",
+            "sort": 110,
+            "audience": "reporter",
+            "category": "Earnings & payments",
+            "answer_en": "No. If the bank returns or fails a payment, our finance team checks it and the full amount comes back to your available balance. You can then request again.",
+            "answer_te": "లేదు. బ్యాంకు చెల్లింపును తిరిగి పంపినా, విఫలమైనా ఫైనాన్స్ బృందం తనిఖీ చేసి పూర్తి మొత్తాన్ని మీ బ్యాలెన్స్‌కు తిరిగి జమ చేస్తుంది. తర్వాత మళ్ళీ అభ్యర్థించవచ్చు.",
+            "category_te": "ఆదాయం, చెల్లింపులు",
+            "question_en": "My payment failed. Did I lose money?",
+            "question_te": "చెల్లింపు విఫలమైంది. డబ్బు పోయిందా?"
+        },
+        {
+            "id": "r-tds",
+            "sort": 120,
+            "audience": "reporter",
+            "category": "Earnings & payments",
+            "answer_en": "When TDS is switched on and your payouts in a financial year cross the limit, tax is deducted and paid to the government in your name. With a verified PAN the rate is lower. Your PAN is encrypted and shown only masked.",
+            "answer_te": "TDS అమలులో ఉండి, ఒక ఆర్థిక సంవత్సరంలో మీ చెల్లింపులు పరిమితి దాటితే, పన్ను మినహాయించి మీ పేరుతో ప్రభుత్వానికి చెల్లిస్తాం. ధృవీకరించిన PAN ఉంటే రేటు తక్కువ. మీ PAN ఎన్‌క్రిప్ట్ చేయబడి, మాస్క్ చేసి మాత్రమే చూపబడుతుంది.",
+            "category_te": "ఆదాయం, చెల్లింపులు",
+            "question_en": "Why was TDS deducted? Why do you need my PAN?",
+            "question_te": "TDS ఎందుకు మినహాయించారు? నా PAN ఎందుకు?"
+        },
+        {
+            "id": "r-bribe",
+            "sort": 130,
+            "audience": "reporter",
+            "category": "Ethics & safety",
+            "answer_en": "Refuse and tell us at once from Help & support. Taking money or favours for news is not allowed and leads to removal. Your safety comes first: never put yourself in danger for a story.",
+            "answer_te": "నిరాకరించి, వెంటనే సహాయం విభాగం ద్వారా మాకు తెలియజేయండి. వార్తల కోసం డబ్బు లేదా లాభాలు తీసుకోవడం నిషిద్ధం, అలా చేస్తే తొలగిస్తాం. మీ భద్రతే ముఖ్యం: వార్త కోసం ప్రమాదంలో పడకండి.",
+            "category_te": "నైతికత, భద్రత",
+            "question_en": "Someone offered me money to publish or stop a story.",
+            "question_te": "వార్త ప్రచురించడానికి లేదా ఆపడానికి ఎవరైనా డబ్బు ఇవ్వబోయారు."
+        }
+    ],
+    "lessons": [
+        {
+            "id": "l1-local-news",
+            "quiz": [
+                {
+                    "q_en": "Which of these is the most important detail to include?",
+                    "q_te": "వీటిలో తప్పనిసరిగా ఉండాల్సిన వివరం ఏది?",
+                    "answer": 0,
+                    "options": [
+                        {
+                            "en": "Exactly where and when it happened",
+                            "te": "ఎక్కడ, ఎప్పుడు జరిగిందో ఖచ్చితంగా"
+                        },
+                        {
+                            "en": "Your personal opinion",
+                            "te": "మీ వ్యక్తిగత అభిప్రాయం"
+                        },
+                        {
+                            "en": "A long introduction",
+                            "te": "పెద్ద పరిచయం"
+                        }
+                    ]
+                },
+                {
+                    "q_en": "How long should a news card summary be?",
+                    "q_te": "వార్త కార్డు సారాంశం ఎంత ఉండాలి?",
+                    "answer": 0,
+                    "options": [
+                        {
+                            "en": "About 60–80 words",
+                            "te": "సుమారు 60–80 పదాలు"
+                        },
+                        {
+                            "en": "At least 500 words",
+                            "te": "కనీసం 500 పదాలు"
+                        },
+                        {
+                            "en": "One word",
+                            "te": "ఒక్క పదం"
+                        }
+                    ]
+                }
+            ],
+            "sort": 1,
+            "body_en": "A good local story answers six questions: who, what, where, when, why and how.\n\n• Write about something that affects people in your area.\n• Say exactly where it happened: village, ward, landmark.\n• Say when it happened.\n• Keep it short: a strong headline and 60–80 words are enough for a card.",
+            "body_te": "మంచి స్థానిక వార్త ఆరు ప్రశ్నలకు జవాబిస్తుంది: ఎవరు, ఏమిటి, ఎక్కడ, ఎప్పుడు, ఎందుకు, ఎలా.\n\n• మీ ప్రాంత ప్రజలపై ప్రభావం చూపే విషయం గురించి రాయండి.\n• ఎక్కడ జరిగిందో ఖచ్చితంగా చెప్పండి: గ్రామం, వార్డు, గుర్తు.\n• ఎప్పుడు జరిగిందో చెప్పండి.\n• క్లుప్తంగా రాయండి: బలమైన శీర్షిక, 60–80 పదాలు చాలు.",
+            "title_en": "What makes local news",
+            "title_te": "స్థానిక వార్త అంటే ఏమిటి"
+        },
+        {
+            "id": "l2-verify",
+            "quiz": [
+                {
+                    "q_en": "You received a shocking WhatsApp forward about your town. What do you do?",
+                    "q_te": "మీ ఊరి గురించి ఆశ్చర్యకరమైన వాట్సాప్ ఫార్వర్డ్ వచ్చింది. ఏం చేస్తారు?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "Send it to Chatimpu immediately",
+                            "te": "వెంటనే చాటింపుకు పంపుతాను"
+                        },
+                        {
+                            "en": "Check it with an official or eyewitnesses first; send only if confirmed",
+                            "te": "ముందు అధికారి లేదా ప్రత్యక్ష సాక్షులతో నిర్ధారించుకుని, నిజమైతేనే పంపుతాను"
+                        },
+                        {
+                            "en": "Post it on social media",
+                            "te": "సోషల్ మీడియాలో పెడతాను"
+                        }
+                    ]
+                },
+                {
+                    "q_en": "Can you use a photo from a TV channel's website?",
+                    "q_te": "టీవీ ఛానెల్ వెబ్‌సైట్ నుంచి ఫోటో వాడవచ్చా?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "Yes, if I credit them",
+                            "te": "అవును, వారి పేరు రాస్తే"
+                        },
+                        {
+                            "en": "No, only my own photos or ones I have permission for",
+                            "te": "కాదు, నా సొంత ఫోటోలు లేదా అనుమతి ఉన్నవి మాత్రమే"
+                        }
+                    ]
+                }
+            ],
+            "sort": 2,
+            "body_en": "One wrong story can damage trust in all of us.\n\n• Send only what you saw yourself, or confirm it with an official or two independent people.\n• Never send forwarded WhatsApp messages or rumours.\n• Write how you checked it in the private \"Sources & evidence\" box. Editors read it; readers never see it.\n• Do not copy text or photos from TV, papers or other apps.",
+            "body_te": "ఒక్క తప్పు వార్త మనందరిపై నమ్మకాన్ని దెబ్బతీస్తుంది.\n\n• మీరు స్వయంగా చూసినది లేదా అధికారి లేదా ఇద్దరు వేర్వేరు వ్యక్తులతో నిర్ధారించుకున్నది మాత్రమే పంపండి.\n• ఫార్వర్డ్ చేసిన వాట్సాప్ సందేశాలు, పుకార్లు ఎప్పుడూ పంపకండి.\n• ఎలా నిర్ధారించారో గోప్యమైన \"ఆధారాలు\" బాక్స్‌లో రాయండి. ఎడిటర్లు చదువుతారు; పాఠకులకు కనిపించదు.\n• టీవీ, పత్రికలు, ఇతర యాప్‌ల నుంచి వార్తలు, ఫోటోలు కాపీ చేయకండి.",
+            "title_en": "Check before you send",
+            "title_te": "పంపే ముందు నిర్ధారించుకోండి"
+        },
+        {
+            "id": "l3-photos",
+            "quiz": [
+                {
+                    "q_en": "Which photo must you never send?",
+                    "q_te": "ఏ ఫోటో ఎప్పుడూ పంపకూడదు?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "A pothole on the main road",
+                            "te": "ప్రధాన రహదారిపై గుంత"
+                        },
+                        {
+                            "en": "The face of a child victim in a crime case",
+                            "te": "నేర కేసులో బాధిత చిన్నారి ముఖం"
+                        },
+                        {
+                            "en": "A school building",
+                            "te": "పాఠశాల భవనం"
+                        }
+                    ]
+                },
+                {
+                    "q_en": "How should you shoot a News Reel?",
+                    "q_te": "న్యూస్ రీల్‌ను ఎలా చిత్రీకరించాలి?",
+                    "answer": 0,
+                    "options": [
+                        {
+                            "en": "Vertical (portrait), steady",
+                            "te": "నిలువుగా, స్థిరంగా"
+                        },
+                        {
+                            "en": "Sideways while walking fast",
+                            "te": "అడ్డంగా, వేగంగా నడుస్తూ"
+                        }
+                    ]
+                }
+            ],
+            "sort": 3,
+            "body_en": "Your own photo makes a story trustworthy and earns more.\n\n• Hold the phone steady; for reels shoot vertical, for photos either way.\n• Show the place and the problem clearly; avoid blurry or dark shots.\n• Ask permission before filming people up close.\n• Never show faces of victims of sexual offences, children in sensitive situations, injured people in distress, or dead bodies.",
+            "body_te": "మీ సొంత ఫోటో వార్తను నమ్మదగినదిగా చేస్తుంది, ఎక్కువ ఆదాయం ఇస్తుంది.\n\n• ఫోన్‌ను స్థిరంగా పట్టుకోండి; రీల్స్‌కు నిలువుగా, ఫోటోలకు ఎలాగైనా.\n• ప్రదేశం, సమస్య స్పష్టంగా కనిపించాలి; మసక లేదా చీకటి ఫోటోలు వద్దు.\n• వ్యక్తులను దగ్గరగా చిత్రీకరించే ముందు అనుమతి తీసుకోండి.\n• లైంగిక నేరాల బాధితులు, సున్నితమైన పరిస్థితుల్లో పిల్లలు, బాధలో ఉన్న గాయపడినవారు, మృతదేహాల ముఖాలు ఎప్పుడూ చూపకండి.",
+            "title_en": "Photos and videos",
+            "title_te": "ఫోటోలు, వీడియోలు"
+        },
+        {
+            "id": "l4-law",
+            "quiz": [
+                {
+                    "q_en": "Police arrested a man in a theft case. How do you describe him?",
+                    "q_te": "దొంగతనం కేసులో పోలీసులు ఒకరిని అరెస్ట్ చేశారు. అతన్ని ఎలా వర్ణిస్తారు?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "The thief",
+                            "te": "దొంగ"
+                        },
+                        {
+                            "en": "The accused, as per police",
+                            "te": "పోలీసుల ప్రకారం నిందితుడు"
+                        }
+                    ]
+                },
+                {
+                    "q_en": "Can you publish the name of a sexual assault victim if the family agrees?",
+                    "q_te": "కుటుంబం ఒప్పుకుంటే లైంగిక దాడి బాధితురాలి పేరు ప్రచురించవచ్చా?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "Yes",
+                            "te": "అవును"
+                        },
+                        {
+                            "en": "No, never identify the victim",
+                            "te": "కాదు, బాధితురాలిని ఎప్పుడూ గుర్తించేలా రాయకూడదు"
+                        }
+                    ]
+                }
+            ],
+            "sort": 4,
+            "body_en": "Some stories can hurt people or break the law if written carelessly.\n\n• Accusations against a named person: write only what police or courts said, and say \"accused\", never \"culprit\".\n• Crime, communal, caste, political and health stories are checked by an editor before publishing.\n• Do not identify victims of sexual offences (the law forbids it) or children in conflict with the law.\n• Write calmly: no insults, no guessing motives.",
+            "body_te": "జాగ్రత్తగా రాయకపోతే కొన్ని వార్తలు వ్యక్తులను బాధిస్తాయి లేదా చట్టాన్ని ఉల్లంఘిస్తాయి.\n\n• పేరున్న వ్యక్తిపై ఆరోపణలు: పోలీసులు లేదా కోర్టులు చెప్పినదే రాయండి, \"నిందితుడు\" అనండి, \"దోషి\" అనకండి.\n• నేర, మత, కుల, రాజకీయ, ఆరోగ్య వార్తలను ఎడిటర్ తనిఖీ చేశాకే ప్రచురిస్తాం.\n• లైంగిక నేరాల బాధితుల గుర్తింపు (చట్టం నిషేధిస్తుంది), చట్టంతో సంఘర్షణలో ఉన్న పిల్లల గుర్తింపు బయటపెట్టకండి.\n• ప్రశాంతంగా రాయండి: తిట్లు, ఊహాగానాలు వద్దు.",
+            "title_en": "Law, fairness and sensitive news",
+            "title_te": "చట్టం, న్యాయం, సున్నితమైన వార్తలు"
+        },
+        {
+            "id": "l5-safety",
+            "quiz": [
+                {
+                    "q_en": "A shop owner offers ₹500 to publish good news about his shop. What do you do?",
+                    "q_te": "ఒక దుకాణదారుడు తన దుకాణం గురించి మంచి వార్త రాయమని ₹500 ఇస్తానన్నాడు. ఏం చేస్తారు?",
+                    "answer": 1,
+                    "options": [
+                        {
+                            "en": "Accept, it is good news anyway",
+                            "te": "తీసుకుంటాను, ఎలాగూ మంచి వార్తే"
+                        },
+                        {
+                            "en": "Refuse and inform Chatimpu",
+                            "te": "నిరాకరించి చాటింపుకు తెలియజేస్తాను"
+                        }
+                    ]
+                },
+                {
+                    "q_en": "A crowd is turning violent. What is right?",
+                    "q_te": "గుంపు హింసాత్మకంగా మారుతోంది. ఏది సరైనది?",
+                    "answer": 0,
+                    "options": [
+                        {
+                            "en": "Move to a safe place; report what you can safely",
+                            "te": "సురక్షిత ప్రదేశానికి వెళ్ళి, సురక్షితంగా చేయగలిగినది రిపోర్ట్ చేయాలి"
+                        },
+                        {
+                            "en": "Go into the middle for the best video",
+                            "te": "మంచి వీడియో కోసం మధ్యలోకి వెళ్ళాలి"
+                        }
+                    ]
+                }
+            ],
+            "sort": 5,
+            "body_en": "No story is worth getting hurt.\n\n• Stay away from fights, fires, floods and crowds that turn violent; report from a safe place.\n• Never take money, gifts or favours to publish or stop a story; report such offers to us.\n• Do not use the Chatimpu name to demand anything from anyone.\n• If you are threatened because of a story, tell us through Help & support.",
+            "body_te": "ఏ వార్తా మీ ప్రాణం కంటే విలువైనది కాదు.\n\n• గొడవలు, మంటలు, వరదలు, హింసాత్మకంగా మారే గుంపులకు దూరంగా ఉండండి; సురక్షిత ప్రదేశం నుంచి రిపోర్ట్ చేయండి.\n• వార్త ప్రచురించడానికి లేదా ఆపడానికి డబ్బు, బహుమతులు, లాభాలు ఎప్పుడూ తీసుకోకండి; అలాంటి ఆఫర్లను మాకు తెలియజేయండి.\n• ఎవరినీ ఏదీ డిమాండ్ చేయడానికి చాటింపు పేరు వాడకండి.\n• వార్త కారణంగా బెదిరింపులు వస్తే సహాయం విభాగం ద్వారా మాకు చెప్పండి.",
+            "title_en": "Your safety and honesty",
+            "title_te": "మీ భద్రత, నిజాయితీ"
+        }
+    ],
+    "contacts": [
+        {
+            "id": "in-112",
+            "kind": "emergency",
+            "phone": "112",
+            "name_en": "Emergency (all services)",
+            "name_te": "అత్యవసర సేవలు (అన్నీ)"
+        },
+        {
+            "id": "in-100",
+            "kind": "police",
+            "phone": "100",
+            "name_en": "Police",
+            "name_te": "పోలీస్"
+        },
+        {
+            "id": "in-108",
+            "kind": "ambulance",
+            "phone": "108",
+            "name_en": "Ambulance",
+            "name_te": "అంబులెన్స్"
+        },
+        {
+            "id": "in-101",
+            "kind": "fire",
+            "phone": "101",
+            "name_en": "Fire",
+            "name_te": "అగ్నిమాపక"
+        },
+        {
+            "id": "in-181",
+            "kind": "women",
+            "phone": "181",
+            "name_en": "Women helpline",
+            "name_te": "మహిళా హెల్ప్‌లైన్"
+        },
+        {
+            "id": "in-1098",
+            "kind": "child",
+            "phone": "1098",
+            "name_en": "Childline",
+            "name_te": "చైల్డ్‌లైన్"
+        },
+        {
+            "id": "in-1930",
+            "kind": "cyber",
+            "phone": "1930",
+            "name_en": "Cyber fraud helpline",
+            "name_te": "సైబర్ మోసాల హెల్ప్‌లైన్"
+        }
+    ]
+}

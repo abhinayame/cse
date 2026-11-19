@@ -192,6 +192,7 @@ create or replace function bump_status_share(p_id text) returns void language sq
 $$;
 grant execute on function bump_status_share(text) to anon, authenticated;
 
+insert into languages (code, native, english) values ('te', 'తెలుగు', 'Telugu'), ('en', 'English', 'English') on conflict (code) do nothing;
 -- Starter cards (original Chatimpu text + traditional Telugu proverbs, which are public domain).
 insert into status_cards (id, kind, lang, text, attribution, background, publish_on) values
   ('seed-gm-1', 'good_morning', 'te', 'శుభోదయం! ఈ రోజు మీ ఊరిలో, మీ ఇంట్లో, మీ మనసులో వెలుగు నిండాలి.', null, 'dawn', current_date),

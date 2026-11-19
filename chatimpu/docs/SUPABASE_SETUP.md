@@ -27,7 +27,7 @@ Also note the **project ref** — the `xxxx` part of the URL.
 
 ## 3. Create the database (dashboard → SQL Editor)
 
-Open **SQL Editor → New query**. Run these nine files **in this order**: open each file from the
+Open **SQL Editor → New query**. Run these ten files **in this order**: open each file from the
 repo, paste the whole contents, click **Run**, wait for "Success", then do the next.
 
 1. `chatimpu/supabase/migrations/0001_schema.sql` — tables (turns on PostGIS and pg_trgm)
@@ -43,7 +43,10 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
    tax / payout reports (see [REPORTER_ECOSYSTEM.md](REPORTER_ECOSYSTEM.md) §14). Safe to run again.
 8. `chatimpu/supabase/migrations/0008_content.sql` — duplicate-report auto-reject, News Reels, daily WhatsApp
    status cards and the automated twice-daily news intake. Safe to run again.
-9. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
+9. `chatimpu/supabase/migrations/0009_community.sql` — help centre FAQs, the Reporter Academy, readers' story
+   reports and corrections, grievances (24 h / 15 day deadlines), helplines, daily prices and the community
+   board. Safe to run again.
+10. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
 
 > **Run each file in its own query, and only once.** Click **+ New query** for every file — don't paste
 > several files into one query, and don't press Run twice. A file that has already run fails the second time
@@ -54,7 +57,7 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
 > yet, and changes nothing. Then run only the ❌ files, in order.
 >
 > **Want a clean start?** On a new project only, run `chatimpu/supabase/reset.sql` (it deletes every Chatimpu
-> table and the sample data), then run the nine files again from the top.
+> table and the sample data), then run the ten files again from the top.
 
 Check it worked: **Table Editor → stories** should show 24 rows. Then in SQL Editor run:
 

@@ -18,6 +18,7 @@ import Wallet from './pages/Wallet';
 import Profile from './pages/Profile';
 import Notifications from './pages/Notifications';
 import Help from './pages/Help';
+import Academy from './pages/Academy';
 import More from './pages/More';
 import './reporter.css';
 
@@ -147,6 +148,7 @@ function Signed({ session }: { session: Session }) {
           <Route path="profile" element={<Profile />} />
           <Route path="notifications" element={<Notifications />} />
           <Route path="help" element={<Help />} />
+          <Route path="academy" element={<Academy />} />
           <Route path="more" element={<More />} />
           <Route path="*" element={<Navigate to="/reporter" replace />} />
         </Routes>

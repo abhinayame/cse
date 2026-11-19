@@ -14,6 +14,7 @@ export default function More() {
     ['/reporter/methods', '🏦', t('methods')],
     ['/reporter/profile', '👤', t('profile')],
     ['/reporter/notifications', '🔔', t('notifications'), dash.unread ? String(dash.unread) : undefined],
+    ['/reporter/academy', '🎓', lang === 'te' ? 'రిపోర్టర్ అకాడమీ' : 'Reporter Academy'],
     ['/reporter/help', '❓', t('help')],
   ];
   return (

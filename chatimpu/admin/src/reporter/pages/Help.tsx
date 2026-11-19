@@ -2,6 +2,9 @@
  * Help, FAQ and the contributor policies. The legal texts here are a plain-language starting point
  * and MUST be reviewed by an Indian media / data-protection lawyer before launch (see docs/REPORTER_ECOSYSTEM.md).
  */
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { db } from '../api';
 import { useLang, useT, rupees } from '../i18n';
 import { useReporter } from '../ReporterApp';
 
@@ -52,10 +55,17 @@ const FAQ_TE: [string, string][] = [
 export default function Help() {
   const t = useT(); const lang = useLang();
   const { dash } = useReporter();
-  const faq = lang === 'te' ? FAQ_TE : FAQ_EN;
+  // FAQs are managed by editors in the CMS (Help centre); the built-in list is the fallback.
+  const [rows, setRows] = useState<{ question_te: string; answer_te: string; question_en: string; answer_en: string }[] | null>(null);
+  useEffect(() => { db().from('faqs').select('question_te, answer_te, question_en, answer_en').eq('audience', 'reporter').eq('active', true).order('sort').then(({ data }) => setRows(data ?? null), () => {}); }, []);
+  const faq: [string, string][] = rows?.length ? rows.map((r) => (lang === 'te' ? [r.question_te, r.answer_te] : [r.question_en, r.answer_en])) : lang === 'te' ? FAQ_TE : FAQ_EN;
   return (
     <>
       <h1 className="rp-section">{t('help')}</h1>
+      <Link to="/reporter/academy" className="rp-section rp-card" style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#2E3192', color: '#fff', textDecoration: 'none' }}>
+        <span style={{ fontSize: 26 }} aria-hidden>🎓</span>
+        <span style={{ flex: 1 }}><b>{lang === 'te' ? 'రిపోర్టర్ అకాడమీ' : 'Reporter Academy'}</b><br /><small>{lang === 'te' ? '5 చిన్న పాఠాలు, ప్రతి దానికి క్విజ్' : '5 short lessons, each with a quiz'}</small></span><span aria-hidden>›</span>
+      </Link>
       <section className="rp-section rp-card">
         <h2>FAQ</h2>
         {faq.map(([q, a]) => <details key={q}><summary>{q}</summary><p>{a}</p></details>)}

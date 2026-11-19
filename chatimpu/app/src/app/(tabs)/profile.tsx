@@ -96,6 +96,7 @@ export default function Profile() {
       <Group>
         <Row icon="newspaper" label={tr('reporterHub')} onPress={() => router.push('/reporter')} tint={palette.navy} />
         <Row icon="camera" label={tr('citizenReporter')} onPress={() => router.push('/report')} tint={palette.green} />
+        <Row icon="help-buoy" label={p.language === 'te' ? 'సహాయం, ఫిర్యాదులు' : 'Help & complaints'} onPress={() => router.push('/help')} tint={palette.navy} />
         <Row icon="play-circle" label={tr('autoplay')} toggle={p.autoplay} onToggle={(v) => p.set({ autoplay: v })} />
         <Row icon="speedometer" label={tr('dataSaver')} toggle={p.dataSaver} onToggle={(v) => p.set({ dataSaver: v })} last={!p.user} />
         {p.user && <Row icon="log-out" label={tr('logout')} tint={palette.red} onPress={() => { supabase?.auth.signOut(); p.set({ user: null }); }} last />}

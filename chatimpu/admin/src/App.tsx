@@ -11,6 +11,9 @@ import Reporters from './pages/Reporters';
 import Reels from './pages/Reels';
 import Intake from './pages/Intake';
 import StatusCards from './pages/StatusCards';
+import Corrections from './pages/Corrections';
+import Community from './pages/Community';
+import HelpCentre from './pages/HelpCentre';
 import AssignmentsAdmin from './pages/AssignmentsAdmin';
 import Recognition from './pages/Recognition';
 import Finance from './pages/Finance';
@@ -44,6 +47,9 @@ export default function App() {
         <Route path="reels" element={<Guard section="reels"><Reels /></Guard>} />
         <Route path="intake" element={<Guard section="intake"><Intake /></Guard>} />
         <Route path="status" element={<Guard section="status"><StatusCards /></Guard>} />
+        <Route path="corrections" element={<Guard section="corrections"><Corrections /></Guard>} />
+        <Route path="community" element={<Guard section="community"><Community /></Guard>} />
+        <Route path="help-centre" element={<Guard section="help"><HelpCentre /></Guard>} />
         <Route path="reporters" element={<Guard section="reporters"><Reporters /></Guard>} />
         <Route path="assignments" element={<Guard section="assignments"><AssignmentsAdmin /></Guard>} />
         <Route path="recognition" element={<Guard section="recognition"><Recognition /></Guard>} />

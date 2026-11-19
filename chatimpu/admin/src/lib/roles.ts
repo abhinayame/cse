@@ -5,13 +5,13 @@ export const ROLE_LABEL: Record<Role, string> = {
   super_admin: 'Super Admin', editor: 'Editor', district_moderator: 'District Moderator', reporter: 'Reporter',
 };
 
-export type Section = 'reels' | 'status' | 'intake' | 'dashboard' | 'stories' | 'moderation' | 'editorial' | 'reporters' | 'assignments' | 'recognition' | 'finance' | 'analytics' | 'ads' | 'polls' | 'users';
+export type Section = 'help' | 'corrections' | 'community' | 'reels' | 'status' | 'intake' | 'dashboard' | 'stories' | 'moderation' | 'editorial' | 'reporters' | 'assignments' | 'recognition' | 'finance' | 'analytics' | 'ads' | 'polls' | 'users';
 
 /** Mirrors the RLS policies in supabase/migrations/0002_rls.sql and 0005_reporters.sql. */
 export const CAN: Record<Role, Section[]> = {
-  super_admin: ['reels', 'status', 'intake', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'recognition', 'finance', 'analytics', 'ads', 'polls', 'users'],
-  editor: ['reels', 'status', 'intake', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'recognition', 'analytics', 'polls'],
-  district_moderator: ['reels', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'analytics'],
+  super_admin: ['help', 'corrections', 'community', 'reels', 'status', 'intake', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'recognition', 'finance', 'analytics', 'ads', 'polls', 'users'],
+  editor: ['help', 'corrections', 'community', 'reels', 'status', 'intake', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'recognition', 'analytics', 'polls'],
+  district_moderator: ['corrections', 'community', 'reels', 'dashboard', 'stories', 'moderation', 'editorial', 'reporters', 'assignments', 'analytics'],
   reporter: ['stories'],
 };
 
