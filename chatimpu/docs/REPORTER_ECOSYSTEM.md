@@ -336,3 +336,54 @@ These are flagged, not settled. Please have an Indian lawyer or CA review them.
 - The 26Q worksheet.
 
 **Tested** in `supabase/tests/tax.test.ts` and E2E step 20.
+
+## 15. Newsroom content (`0008_content.sql`)
+
+### Duplicate reports: the earlier report wins
+
+When two **different reporters** send the same incident from the same district within 48 hours, the later report is **rejected automatically**.
+
+- The rejection names the earlier report's code, so the reporter can see what it duplicated.
+- The rejected report never reaches editors and never earns money.
+- **How matching works:** headline wording and shared keywords are compared, in Telugu and English. Telugu case endings count as the same word (అమీర్‌పేటలో ≈ అమీర్‌పేట).
+- **Typical scores:** the same incident written by two people scores about 45–55%; different incidents in the same area score about 15–25%. The default threshold is 40%.
+- **What is not auto-rejected:**
+  - the same reporter sending twice (flagged for the editor only);
+  - reports from different districts;
+  - reports outside the time window.
+- **Settings:** editors can switch the rule off and tune the match level and window under Editorial desk → Duplicate rules.
+- **Mistakes:** an editor can reinstate any auto-rejected report, with a reason.
+
+### News Reels
+
+- The Videos tab is now **News Reels**: vertical presenter videos with a two-line headline strip (a short white line and a bold red line), "EP 3 / 10 · series" labels, and share and like counts.
+- The CMS → **News Reels** page uploads videos (the poster is taken from the video), sets both headline lines in Telugu and English, and saves as draft or published.
+
+### Daily WhatsApp status
+
+- Shareable 9:16 cards: good morning / night, proverbs, quotes, devotional, motivation, festival art and memes.
+- In the app: Explore → *Today's WhatsApp Status*, and a full-screen viewer that shares the card to WhatsApp **as an image** with the Chatimpu logo.
+- The CMS → **WhatsApp Status** page plans cards per day, with a 7-day view and a "+1 day" copy button.
+- The starter cards are original text plus traditional (public-domain) Telugu proverbs. Post only your own text, licensed images, or public-domain material.
+
+### Automated intake
+
+**How a run works:**
+1. It runs at **05:00 and 17:00 IST**, ready for the 06:00 and 18:00 editions. An editor can also click "Run now".
+2. Every *approved source* in CMS → **Auto intake** is read (RSS or Atom).
+3. Each fresh item becomes a short card on the editorial desk that credits and links its source.
+4. The cards go through the same sensitivity checks and earlier-wins duplicate rule as reporters' news, including across feeds. An item is never processed twice.
+
+**Auto-publish:**
+- Only sources marked **official** can auto-publish, to the next edition.
+- Crime, political, health, duplicate, or too short/long items always wait for an editor.
+
+**Summaries:** with `ANTHROPIC_API_KEY` set, cards get AI summaries (labelled machine-written); otherwise the item's own opening sentences are used.
+
+**Getting to about 100 local stories a day:**
+- The dashboard tracks the daily target per category, so you can see which categories have nothing yet.
+- Reaching ~100 depends on how many sources you approve. Good starting points are district collectorates, police and municipal press notes, and licensed agencies.
+
+**Copyright:** every source needs a licence note. Summarising other outlets' articles without permission may infringe copyright, so add only sources you may republish.
+
+**Not yet done:** we haven't added any real feed URLs, because they need checking first. Add yours in the CMS.

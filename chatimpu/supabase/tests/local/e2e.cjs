@@ -48,6 +48,7 @@ const reasonDialog = async (page, text) => { const d = page.getByRole('dialog');
   sql(`update auth.users set phone = '91' || (8000000000 + floor(random()*999999999))::bigint where phone = '91${PHONE}'`);
   sql(`update app_settings set value = '30000' where key = 'withdrawal_threshold_paise'`);
   sql(`update app_settings set value = 'false' where key = 'tds_enabled'`); // a failed earlier run may have left TDS on
+  sql(`update citizen_reports set submitted_at = submitted_at - interval '30 days' where submitted_at > now() - interval '30 days'`); // earlier runs' identical stories are real duplicates (0008)
   sql(`update app_settings set value = '5000000' where key = 'tds_threshold_paise'`);
   const editor = await staff('Editor E2E', 'editor');
   const finance = await staff('Finance E2E', null, ['finance']); // finance-only: no newsroom role

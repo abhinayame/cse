@@ -10,7 +10,8 @@ from (values
                             and exists (select 1 from pg_proc where proname = 'sync_profile_phone')),
   (6, '0006_jobs.sql',  exists (select 1 from pg_proc where proname = 'claim_push_batch')),
   (7, '0007_tax.sql',   exists (select 1 from pg_class where relname = 'tds_deductions' and relnamespace = 'public'::regnamespace)),
-  (8, 'seed.sql',        exists (select 1 from pg_class where relname = 'stories' and reltuples > 0)
+  (8, '0008_content.sql', exists (select 1 from pg_class where relname = 'news_sources' and relnamespace = 'public'::regnamespace)),
+  (9, 'seed.sql',        exists (select 1 from pg_class where relname = 'stories' and reltuples > 0)
                          or exists (select 1 from pg_stat_user_tables where relname = 'stories' and n_live_tup > 0))
 ) as t(n, step, done)
 order by n;

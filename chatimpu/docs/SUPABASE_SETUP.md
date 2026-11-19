@@ -27,7 +27,7 @@ Also note the **project ref** — the `xxxx` part of the URL.
 
 ## 3. Create the database (dashboard → SQL Editor)
 
-Open **SQL Editor → New query**. Run these eight files **in this order**: open each file from the
+Open **SQL Editor → New query**. Run these nine files **in this order**: open each file from the
 repo, paste the whole contents, click **Run**, wait for "Success", then do the next.
 
 1. `chatimpu/supabase/migrations/0001_schema.sql` — tables (turns on PostGIS and pg_trgm)
@@ -41,7 +41,9 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
    data-retention sweep, and device-token linking. Safe to run again.
 7. `chatimpu/supabase/migrations/0007_tax.sql` — PAN, TDS on contributor payouts (off until you switch it on) and
    tax / payout reports (see [REPORTER_ECOSYSTEM.md](REPORTER_ECOSYSTEM.md) §14). Safe to run again.
-8. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
+8. `chatimpu/supabase/migrations/0008_content.sql` — duplicate-report auto-reject, News Reels, daily WhatsApp
+   status cards and the automated twice-daily news intake. Safe to run again.
+9. `chatimpu/supabase/seed.sql` — the 24 sample stories, districts, polls, alerts, ads, videos
 
 > **Run each file in its own query, and only once.** Click **+ New query** for every file — don't paste
 > several files into one query, and don't press Run twice. A file that has already run fails the second time
@@ -52,7 +54,7 @@ repo, paste the whole contents, click **Run**, wait for "Success", then do the n
 > yet, and changes nothing. Then run only the ❌ files, in order.
 >
 > **Want a clean start?** On a new project only, run `chatimpu/supabase/reset.sql` (it deletes every Chatimpu
-> table and the sample data), then run the eight files again from the top.
+> table and the sample data), then run the nine files again from the top.
 
 Check it worked: **Table Editor → stories** should show 24 rows. Then in SQL Editor run:
 
@@ -119,6 +121,7 @@ update profiles set verified_reporter = true where phone = '91XXXXXXXXXX';
 supabase secrets set CRON_SECRET="$(openssl rand -hex 24)"    # note the value
 supabase functions deploy notify-dispatch --no-verify-jwt      # protected by CRON_SECRET instead
 supabase functions deploy maintenance --no-verify-jwt
+supabase functions deploy intake --no-verify-jwt            # automated news intake (needs 0008; CRON_SECRET or an editor's login)
 ```
 
 3. SQL Editor (once; run it again whenever the URL or secret changes):
@@ -134,6 +137,7 @@ This creates three jobs (the secret is kept in Supabase **Vault**):
 | `chatimpu-publish-due` | every minute | publishes stories saved as *scheduled* |
 | `chatimpu-notify-dispatch` | every minute | sends account notifications (earnings, payouts, editor decisions…) as push |
 | `chatimpu-maintenance` | daily 02:30 IST | data retention (below) |
+| `chatimpu-intake-morning` / `-evening` | 05:00 and 17:00 IST | reads your approved news sources into the editorial desk, ready for the 06:00 / 18:00 editions (needs 0008 + the `intake` function; optional `ANTHROPIC_API_KEY` secret for AI summaries) |
 
 Check them under **Database → Cron Jobs**. If you created `publish-scheduled` with an older version of this guide, it is replaced.
 

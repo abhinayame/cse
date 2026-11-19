@@ -22,6 +22,7 @@ delete from storage.buckets where id in ('media', 'submissions', 'reporter-priva
 -- 0005 reporter ecosystem (wallet ledger, payouts, assignments …). ⚠ This deletes payout and ledger history.
 drop view if exists reporter_public cascade;
 drop table if exists tds_deductions, reporter_tax_secrets, reporter_tax_profiles cascade;
+drop table if exists intake_items, intake_runs, news_sources, status_cards cascade;
 drop table if exists
   badge_awards, contributor_badges, payment_webhook_events, payment_transactions, withdrawal_requests,
   payout_method_secrets, payout_methods, wallet_ledger_entries, wallet_accounts, reporter_earnings,
