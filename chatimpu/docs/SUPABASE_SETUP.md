@@ -177,15 +177,14 @@ Needed for contributors to add UPI / bank details and for the Finance desk. Full
 variables and the RazorpayX go-live checklist: [REPORTER_ECOSYSTEM.md](REPORTER_ECOSYSTEM.md) §6.
 
 ```bash
-supabase secrets set PAYOUT_ENCRYPTION_KEY="$(openssl rand -base64 32)" PAYOUT_PROVIDER=mock CRON_SECRET="$(openssl rand -hex 24)"
+supabase secrets set PAYOUT_ENCRYPTION_KEY="$(openssl rand -base64 32)" PAYOUT_PROVIDER=mock
 supabase functions deploy payout-methods
 supabase functions deploy payouts
 supabase functions deploy razorpayx-webhook --no-verify-jwt
-supabase functions deploy notify-dispatch --no-verify-jwt
-supabase functions deploy maintenance --no-verify-jwt
 ```
 
-Then schedule them — step 6.
+Don't set `CRON_SECRET` again here. It was set in step 6, and changing it breaks the scheduled jobs until you
+re-run `setup_scheduled_jobs` with the new value.
 
 - **Back up `PAYOUT_ENCRYPTION_KEY`** in a password manager. Without it, stored bank and UPI details can't be decrypted.
 - `PAYOUT_PROVIDER=mock` moves no money. Use it until RazorpayX is set up. Finance can still pay through the bank and record the UTR.
