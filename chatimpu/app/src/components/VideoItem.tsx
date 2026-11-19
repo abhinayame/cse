@@ -16,10 +16,16 @@ import { categoryColors, palette, radius } from '@/theme';
 import type { VideoStory } from '@/data/types';
 import { Share } from 'react-native';
 import { APP } from '@/config';
+import { supabase } from '@/lib/supabase';
 
-interface Props { video: VideoStory; active: boolean; width: number; height: number; muted: boolean; onToggleMute: () => void; lang: string; bottomInset: number; autoplay: boolean }
+/** Language actually used for a strip (falls back like `pick`). */
+const stripLang = (t: Partial<Record<string, string>> | undefined, lang: string) => (t?.[lang] ? lang : t?.te ? 'te' : 'en');
+const stripText = (t: Partial<Record<string, string>> | undefined, lang: string) => (t ? t[lang] ?? t.te ?? t.en ?? '' : '');
+const bump = (id: string, kind: 'share' | 'like') => { supabase?.rpc('bump_video', { p_id: id, p_kind: kind }).then(() => {}, () => {}); };
 
-export function VideoItem({ video, active, width, height, muted, onToggleMute, lang, bottomInset, autoplay }: Props) {
+interface Props { video: VideoStory; active: boolean; width: number; height: number; muted: boolean; onToggleMute: () => void; lang: string; bottomInset: number; autoplay: boolean; topInset?: number }
+
+export function VideoItem({ video, active, width, height, muted, onToggleMute, lang, bottomInset, autoplay, topInset = 44 }: Props) {
   const tr = useT();
   const [liked, setLiked] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -56,10 +62,24 @@ export function VideoItem({ video, active, width, height, muted, onToggleMute, l
         <View pointerEvents="none" style={{ position: 'absolute', top: height / 2 - 1, left: width / 2 - 30, width: 60, height: 2, backgroundColor: 'rgba(255,255,255,0.3)' }} />
       )}
 
+      {/* News Reels headline strip: short white line + bold red line (like a TV lower-third, at the top) */}
+      {(video.headline && stripText(video.headline, lang)) ? (
+        <View pointerEvents="none" style={{ position: 'absolute', top: topInset + 58, left: 16, right: 16, alignItems: 'center' }}>
+          {video.headlineTop && stripText(video.headlineTop, lang) ? (
+            <View style={{ backgroundColor: palette.white, paddingHorizontal: 12, paddingVertical: 2, borderTopLeftRadius: 4, borderTopRightRadius: 4, maxWidth: '92%' }}>
+              <Txt v="title" lang={stripLang(video.headlineTop, lang)} color={palette.ink} numberOfLines={1} align="center">{stripText(video.headlineTop, lang)}</Txt>
+            </View>
+          ) : null}
+          <View style={{ backgroundColor: palette.red, paddingHorizontal: 14, paddingVertical: 4, borderRadius: 4, maxWidth: '100%', shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 }}>
+            <Txt v="h3" lang={stripLang(video.headline, lang)} color={palette.white} numberOfLines={2} align="center">{stripText(video.headline, lang)}</Txt>
+          </View>
+        </View>
+      ) : null}
+
       {/* action rail */}
       <View style={{ position: 'absolute', right: 12, bottom: bottomInset + 100, alignItems: 'center', gap: 20 }}>
-        <RailBtn icon={liked ? 'heart' : 'heart-outline'} color={liked ? palette.red : palette.white} label={compact(video.likes + (liked ? 1 : 0))} onPress={() => { setLiked(!liked); haptic.success(); }} />
-        <RailBtn icon="logo-whatsapp" label={compact(video.shares)} onPress={() => Share.share({ message: `${pick(video.caption, lang)}\n${APP.shareBase}v/${video.id}` })} />
+        <RailBtn icon={liked ? 'heart' : 'heart-outline'} color={liked ? palette.red : palette.white} label={compact(video.likes + (liked ? 1 : 0))} onPress={() => { if (!liked) bump(video.id, 'like'); setLiked(!liked); haptic.success(); }} />
+        <RailBtn icon="logo-whatsapp" label={compact(video.shares)} onPress={() => { bump(video.id, 'share'); Share.share({ message: `${stripText(video.headline, lang) || pick(video.caption, lang)}\n${APP.shareBase}v/${video.id}` }); }} />
         {video.storyId && <RailBtn icon="newspaper-outline" label={tr('readFull').split(' ')[0]} onPress={() => router.push(`/story/${video.storyId}`)} />}
         <RailBtn icon={muted ? 'volume-mute' : 'volume-high'} label="" onPress={onToggleMute} />
       </View>
@@ -71,9 +91,14 @@ export function VideoItem({ video, active, width, height, muted, onToggleMute, l
             <Txt v="title" lang={l} color={palette.white}>{pick(sub.text, lang)}</Txt>
           </Animated.View>
         )}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {video.episode ? (
+            <View style={{ paddingHorizontal: 8, height: 22, borderRadius: 11, backgroundColor: 'rgba(255,255,255,0.18)', justifyContent: 'center' }}>
+              <Txt lang="en" v="caption" color={palette.white} style={{ fontFamily: 'Inter_700Bold' }}>EP {video.episode}{video.episodeTotal ? ` / ${video.episodeTotal}` : ''}{video.series ? ` · ${video.series}` : ''}</Txt>
+            </View>
+          ) : null}
           <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: categoryColors[video.category] }} />
-          <Txt v="label" color={palette.redSoft}>{tr(`cat_${video.category}`)} · {placeName(lang, districtById(video.districtId))}</Txt>
+          <Txt v="label" color={palette.redSoft} numberOfLines={1}>{tr(`cat_${video.category}`)} · {placeName(lang, districtById(video.districtId))}</Txt>
         </View>
         <Txt v="h3" lang={l} color={palette.white} numberOfLines={3}>{pick(video.caption, lang)}</Txt>
         <View style={{ height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.25)', overflow: 'hidden' }}>

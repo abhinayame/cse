@@ -110,6 +110,12 @@ export interface VideoStory {
   subtitles: { at: number; text: Partial<Record<ContentLang, string>> & { en: string } }[];
   likes: number;
   shares: number;
+  /** News Reels headline strip: short white line on top, bold red line below */
+  headlineTop?: Partial<Record<ContentLang, string>>;
+  headline?: Partial<Record<ContentLang, string>>;
+  series?: string | null;
+  episode?: number | null;
+  episodeTotal?: number | null;
 }
 
 export type Role = 'super_admin' | 'editor' | 'district_moderator' | 'reporter';

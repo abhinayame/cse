@@ -34,6 +34,7 @@ const en = {
   tabFeed: 'Feed',
   tabExplore: 'Explore',
   tabVideos: 'Videos',
+  newsReels: 'News Reels',
   tabLocal: 'Local',
   tabProfile: 'Profile',
   forYou: 'For You',

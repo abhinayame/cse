@@ -8,6 +8,7 @@ import StoryEditor from './pages/StoryEditor';
 import Moderation from './pages/Moderation';
 import Editorial from './pages/Editorial';
 import Reporters from './pages/Reporters';
+import Reels from './pages/Reels';
 import AssignmentsAdmin from './pages/AssignmentsAdmin';
 import Recognition from './pages/Recognition';
 import Finance from './pages/Finance';
@@ -38,6 +39,7 @@ export default function App() {
         {/* Live data uses the full editorial workflow; the simple queue remains for demo mode. */}
         <Route path="moderation" element={live ? <Navigate to="/editorial" replace /> : <Guard section="moderation"><Moderation /></Guard>} />
         <Route path="editorial" element={<Guard section="editorial"><Editorial /></Guard>} />
+        <Route path="reels" element={<Guard section="reels"><Reels /></Guard>} />
         <Route path="reporters" element={<Guard section="reporters"><Reporters /></Guard>} />
         <Route path="assignments" element={<Guard section="assignments"><AssignmentsAdmin /></Guard>} />
         <Route path="recognition" element={<Guard section="recognition"><Recognition /></Guard>} />

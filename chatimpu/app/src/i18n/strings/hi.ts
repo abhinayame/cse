@@ -36,6 +36,7 @@ const hi: Strings = {
   tabFeed: 'फ़ीड',
   tabExplore: 'खोजें',
   tabVideos: 'वीडियो',
+  newsReels: 'न्यूज़ रील्स',
   tabLocal: 'स्थानीय',
   tabProfile: 'प्रोफ़ाइल',
   forYou: 'आपके लिए',

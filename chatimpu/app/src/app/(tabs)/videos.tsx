@@ -34,8 +34,8 @@ export default function Videos() {
 
   const render = useCallback(({ item, index }: { item: VideoStory; index: number }) => (
     <VideoItem video={item} active={focused && index === active} width={width} height={height} muted={muted} onToggleMute={() => setMuted((m) => !m)}
-      lang={language} bottomInset={tabSpace} autoplay={autoplay} />
-  ), [active, focused, width, height, muted, language, tabSpace, autoplay]);
+      lang={language} bottomInset={tabSpace} autoplay={autoplay} topInset={insets.top} />
+  ), [active, focused, width, height, muted, language, tabSpace, autoplay, insets.top]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#000' }}>
@@ -59,7 +59,7 @@ export default function Videos() {
         />
       )}
       <View pointerEvents="none" style={{ position: 'absolute', top: insets.top + 10, left: 20 }}>
-        <Txt v="h2" color={palette.white}>{tr('tabVideos')}</Txt>
+        <Txt v="h2" color={palette.white}>{tr('newsReels')}</Txt>
       </View>
     </View>
   );

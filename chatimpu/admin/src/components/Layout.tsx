@@ -9,6 +9,7 @@ const NAV: { to: string; section: Section; label: string; icon: string; mode?: '
   { to: '/stories', section: 'stories', label: 'Stories', icon: '▤' },
   { to: '/moderation', section: 'moderation', label: 'Moderation', icon: '✓', mode: 'demo' },
   { to: '/editorial', section: 'editorial', label: 'Editorial desk', icon: '✓', mode: 'live' },
+  { to: '/reels', section: 'reels', label: 'News Reels', icon: '▶' },
   { to: '/reporters', section: 'reporters', label: 'Reporters', icon: '✎' },
   { to: '/assignments', section: 'assignments', label: 'Assignments', icon: '⌖' },
   { to: '/recognition', section: 'recognition', label: 'Recognition', icon: '★' },

@@ -36,6 +36,7 @@ const te: Strings = {
   tabFeed: 'ఫీడ్',
   tabExplore: 'అన్వేషణ',
   tabVideos: 'వీడియోలు',
+  newsReels: 'న్యూస్ రీల్స్',
   tabLocal: 'స్థానికం',
   tabProfile: 'ప్రొఫైల్',
   forYou: 'మీ కోసం',

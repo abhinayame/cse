@@ -130,3 +130,34 @@ begin
   perform notify(c.reporter_id, 'review', 'Your story is back in review · ' || c.code, 'మీ వార్త మళ్ళీ పరిశీలనలో ఉంది · ' || c.code, p_note, p_note, '/reporter/submissions/' || c.id);
   return c;
 end $$;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- 2. NEWS REELS: vertical presenter videos with a two-line headline strip, series / episodes
+-- ════════════════════════════════════════════════════════════════════════════
+alter table videos add column if not exists headline_top jsonb not null default '{}';    -- white strip, e.g. {"te": "రేపటి నుంచే"}
+alter table videos add column if not exists headline jsonb not null default '{}';        -- red strip,   e.g. {"te": "కొత్త రిజిస్ట్రేషన్ ఛార్జీలు!"}
+alter table videos add column if not exists series text;                                  -- e.g. "Explainers"
+alter table videos add column if not exists episode int check (episode is null or episode > 0);
+alter table videos add column if not exists episode_total int check (episode_total is null or episode_total > 0);
+alter table videos add column if not exists status text not null default 'published' check (status in ('draft', 'published'));
+alter table videos add column if not exists created_by uuid references profiles default auth.uid();
+create index if not exists videos_feed_idx on videos (status, published_at desc);
+
+drop policy if exists read_all on videos;
+create policy read_all on videos for select using (status = 'published' or my_role() in ('super_admin', 'editor', 'district_moderator'));
+drop policy if exists staff_write on videos;
+create policy staff_write on videos for all using (my_role() in ('super_admin', 'editor') or (my_role() = 'district_moderator' and moderates(district_id)))
+  with check (my_role() in ('super_admin', 'editor') or (my_role() = 'district_moderator' and moderates(district_id)));
+
+create or replace view video_feed with (security_invoker = true) as
+  select id, story_id as "storyId", image_url(video_path) as uri, image_url(poster_path) as poster, district_id as "districtId",
+         category_id as category, duration_sec as "durationSec", caption, subtitles, likes, shares,
+         headline_top as "headlineTop", headline, series, episode, episode_total as "episodeTotal", published_at as "publishedAt"
+  from videos where status = 'published' and published_at <= now() order by published_at desc;
+
+-- Share / like counters from the app (anyone; one increment per call, clamped).
+create or replace function bump_video(p_id text, p_kind text) returns void language sql security definer set search_path = public as $$
+  update videos set shares = shares + case when p_kind = 'share' then 1 else 0 end, likes = likes + case when p_kind = 'like' then 1 else 0 end
+  where id = p_id and status = 'published' and p_kind in ('share', 'like')
+$$;
+grant execute on function bump_video(text, text) to anon, authenticated;

@@ -123,29 +123,29 @@ export const ADS: Ad[] = [
 
 const SAMPLE = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample';
 export const VIDEOS: VideoStory[] = [
-  { id: 'vid-1', storyId: 'vsp-depression-warning', uri: `${SAMPLE}/ForBiggerBlazes.mp4`, poster: pic('vid-1'), districtId: 'vsp', category: 'weather', durationSec: 15, likes: 8200, shares: 2100,
+  { id: 'vid-1', storyId: 'vsp-depression-warning', uri: `${SAMPLE}/ForBiggerBlazes.mp4`, poster: pic('vid-1'), districtId: 'vsp', category: 'weather', durationSec: 15, likes: 8200, shares: 2100, headlineTop: { te: 'మత్స్యకారులకు హెచ్చరిక', en: 'Warning for fishermen' }, headline: { te: '72 గంటలు వేట నిషేధం!', en: '72-hour fishing ban!' }, series: 'Weather Watch', episode: 3, episodeTotal: 10,
     caption: { en: 'Rough seas at Bheemunipatnam as the depression nears', te: 'వాయుగుండం సమీపిస్తుండటంతో భీమునిపట్నం వద్ద అల్లకల్లోలంగా సముద్రం' },
     subtitles: [
       { at: 0, text: { en: 'Waves up to 3 metres reported near the harbour', te: 'హార్బర్ వద్ద 3 మీటర్ల ఎత్తు అలలు' } },
       { at: 5, text: { en: 'Boats pulled ashore; 72-hour fishing ban', te: 'పడవలు ఒడ్డుకు; 72 గంటల వేట నిషేధం' } },
       { at: 10, text: { en: 'Relief centres open in 26 villages', te: '26 గ్రామాల్లో పునరావాస కేంద్రాలు' } },
     ] },
-  { id: 'vid-2', storyId: 'wgl-temple-lights', uri: `${SAMPLE}/ForBiggerEscapes.mp4`, poster: pic('vid-2'), districtId: 'wgl', category: 'devotional', durationSec: 15, likes: 12400, shares: 5300,
+  { id: 'vid-2', storyId: 'wgl-temple-lights', uri: `${SAMPLE}/ForBiggerEscapes.mp4`, poster: pic('vid-2'), districtId: 'wgl', category: 'devotional', durationSec: 15, likes: 12400, shares: 5300, headlineTop: { te: 'వేయి స్తంభాల గుడిలో', en: 'At the Thousand Pillar Temple' }, headline: { te: '10 వేల దీపాల కాంతి', en: '10,000 lamps tonight' },
     caption: { en: '10,000 lamps light up the Thousand Pillar Temple', te: '10 వేల దీపాల వెలుగులో వేయి స్తంభాల గుడి' },
     subtitles: [
       { at: 0, text: { en: 'Preparations begin at dawn', te: 'తెల్లవారుజాము నుంచే ఏర్పాట్లు' } },
       { at: 6, text: { en: 'Volunteers place lamps on every pillar', te: 'ప్రతి స్తంభంపై దీపాలు ఉంచుతున్న వాలంటీర్లు' } },
     ] },
-  { id: 'vid-3', storyId: 'hyd-u19-cricket', uri: `${SAMPLE}/ForBiggerFun.mp4`, poster: pic('vid-3'), districtId: 'hyd', category: 'sports', durationSec: 60, likes: 6100, shares: 980,
+  { id: 'vid-3', storyId: 'hyd-u19-cricket', uri: `${SAMPLE}/ForBiggerFun.mp4`, poster: pic('vid-3'), districtId: 'hyd', category: 'sports', durationSec: 60, likes: 6100, shares: 980, headlineTop: { te: 'చివరి బంతికి', en: 'Off the last ball' }, headline: { te: 'సిక్సర్‌తో టైటిల్!', en: 'A six for the title!' },
     caption: { en: 'Last-ball six seals the U-19 title for Secunderabad', te: 'చివరి బంతికి సిక్సర్‌తో సికింద్రాబాద్‌కు అండర్-19 టైటిల్' },
     subtitles: [
       { at: 0, text: { en: '6 needed off the final ball…', te: 'చివరి బంతికి 6 పరుగులు కావాలి…' } },
       { at: 4, text: { en: 'And it sails over long-on!', te: 'లాంగ్-ఆన్ మీదుగా సిక్సర్!' } },
     ] },
-  { id: 'vid-4', storyId: 'hyd-rain-alert', uri: `${SAMPLE}/ForBiggerJoyrides.mp4`, poster: pic('vid-4'), districtId: 'hyd', category: 'weather', durationSec: 15, likes: 9300, shares: 4100,
+  { id: 'vid-4', storyId: 'hyd-rain-alert', uri: `${SAMPLE}/ForBiggerJoyrides.mp4`, poster: pic('vid-4'), districtId: 'hyd', category: 'weather', durationSec: 15, likes: 9300, shares: 4100, headlineTop: { te: 'రాజ్‌భవన్ రోడ్', en: 'Raj Bhavan Road' }, headline: { te: 'కుండపోతతో జలమయం', en: 'Flooded after downpour' }, series: 'Weather Watch', episode: 4, episodeTotal: 10,
     caption: { en: 'Evening downpour floods Raj Bhavan Road', te: 'సాయంత్రం కుండపోత: రాజ్‌భవన్ రోడ్ జలమయం' },
     subtitles: [{ at: 0, text: { en: 'GHMC teams clearing drains', te: 'కాలువలు శుభ్రం చేస్తున్న జీహెచ్‌ఎంసీ బృందాలు' } }] },
-  { id: 'vid-5', storyId: 'vsp-film-shoot', uri: `${SAMPLE}/ForBiggerMeltdowns.mp4`, poster: pic('vid-5'), districtId: 'vsp', category: 'cinema', durationSec: 15, likes: 15800, shares: 6200,
+  { id: 'vid-5', storyId: 'vsp-film-shoot', uri: `${SAMPLE}/ForBiggerMeltdowns.mp4`, poster: pic('vid-5'), districtId: 'vsp', category: 'cinema', durationSec: 15, likes: 15800, shares: 6200, headlineTop: { te: 'విశాఖ తీరంలో', en: 'On the Vizag coast' }, headline: { te: '1940ల నాటి హార్బర్ సెట్', en: 'A 1940s harbour set' },
     caption: { en: 'Inside the 1940s harbour set built on Vizag coast', te: 'విశాఖ తీరంలో 1940ల నాటి హార్బర్ సెట్' },
     subtitles: [{ at: 0, text: { en: '600 locals are working on the set', te: 'సెట్‌లో 600 మంది స్థానికులు' } }] },
 ];
