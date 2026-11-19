@@ -9,6 +9,7 @@ const NAV: { to: string; section: Section; label: string; icon: string; mode?: '
   { to: '/stories', section: 'stories', label: 'Stories', icon: '▤' },
   { to: '/moderation', section: 'moderation', label: 'Moderation', icon: '✓', mode: 'demo' },
   { to: '/editorial', section: 'editorial', label: 'Editorial desk', icon: '✓', mode: 'live' },
+  { to: '/intake', section: 'intake', label: 'Auto intake', icon: '⇣', mode: 'live' },
   { to: '/reels', section: 'reels', label: 'News Reels', icon: '▶' },
   { to: '/status', section: 'status', label: 'WhatsApp Status', icon: '◐' },
   { to: '/reporters', section: 'reporters', label: 'Reporters', icon: '✎' },

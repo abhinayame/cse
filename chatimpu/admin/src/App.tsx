@@ -9,6 +9,7 @@ import Moderation from './pages/Moderation';
 import Editorial from './pages/Editorial';
 import Reporters from './pages/Reporters';
 import Reels from './pages/Reels';
+import Intake from './pages/Intake';
 import StatusCards from './pages/StatusCards';
 import AssignmentsAdmin from './pages/AssignmentsAdmin';
 import Recognition from './pages/Recognition';
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="moderation" element={live ? <Navigate to="/editorial" replace /> : <Guard section="moderation"><Moderation /></Guard>} />
         <Route path="editorial" element={<Guard section="editorial"><Editorial /></Guard>} />
         <Route path="reels" element={<Guard section="reels"><Reels /></Guard>} />
+        <Route path="intake" element={<Guard section="intake"><Intake /></Guard>} />
         <Route path="status" element={<Guard section="status"><StatusCards /></Guard>} />
         <Route path="reporters" element={<Guard section="reporters"><Reporters /></Guard>} />
         <Route path="assignments" element={<Guard section="assignments"><AssignmentsAdmin /></Guard>} />

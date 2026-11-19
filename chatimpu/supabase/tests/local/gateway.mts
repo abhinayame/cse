@@ -33,7 +33,7 @@ let loading = '';
   env: { get: (k: string) => ENV[k] ?? process.env[k] },
   serve: (h: (r: Request) => Promise<Response>) => { handlers[loading] = h; },
 };
-for (const name of ['payout-methods', 'payouts', 'razorpayx-webhook', 'notify-dispatch', 'maintenance']) { loading = name; await import(path.join(FUNCS, name, 'index.ts')); }
+for (const name of ['payout-methods', 'payouts', 'razorpayx-webhook', 'notify-dispatch', 'maintenance', 'intake']) { loading = name; await import(path.join(FUNCS, name, 'index.ts')); }
 
 const rest = async (fn: string, token: string, body: unknown) => {
   const r = await fetch(`http://127.0.0.1:${REST}/rpc/${fn}`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

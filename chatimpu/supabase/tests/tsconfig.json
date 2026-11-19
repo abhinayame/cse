@@ -23,6 +23,7 @@
   "include": [
     "./*.ts",
     "../functions/_shared/payouts/*.ts",
-    "../functions/_shared/jobs/*.ts"
+    "../functions/_shared/jobs/*.ts",
+    "../functions/_shared/intake/*.ts"
   ]
 }
