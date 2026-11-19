@@ -161,3 +161,51 @@ create or replace function bump_video(p_id text, p_kind text) returns void langu
   where id = p_id and status = 'published' and p_kind in ('share', 'like')
 $$;
 grant execute on function bump_video(text, text) to anon, authenticated;
+
+-- ════════════════════════════════════════════════════════════════════════════
+-- 3. DAILY WHATSAPP STATUS: shareable 9:16 cards (quotes, greetings, devotional, proverbs, memes)
+-- ════════════════════════════════════════════════════════════════════════════
+create table if not exists status_cards (
+  id text primary key default gen_random_uuid()::text,
+  kind text not null check (kind in ('good_morning', 'good_night', 'quote', 'proverb', 'devotional', 'motivation', 'festival', 'meme')),
+  lang text not null default 'te' references languages,
+  text text not null check (char_length(text) between 1 and 400),
+  attribution text,                                   -- e.g. "తెలుగు సామెత" or the author, when quoting
+  background text not null default 'saffron',         -- gradient preset (app/src/data/status.ts) …
+  image_path text,                                    -- … or an image in the media bucket (memes, festival art)
+  publish_on date not null default ((now() at time zone 'Asia/Kolkata')::date),
+  status text not null default 'published' check (status in ('draft', 'published')),
+  shares int not null default 0,
+  created_by uuid references profiles default auth.uid(),
+  created_at timestamptz not null default now()
+);
+create index if not exists status_cards_day_idx on status_cards (publish_on desc, status);
+alter table status_cards enable row level security;
+drop policy if exists status_read on status_cards;
+create policy status_read on status_cards for select using (
+  (status = 'published' and publish_on <= (now() at time zone 'Asia/Kolkata')::date) or my_role() in ('super_admin', 'editor'));
+drop policy if exists status_write on status_cards;
+create policy status_write on status_cards for all using (my_role() in ('super_admin', 'editor')) with check (my_role() in ('super_admin', 'editor'));
+
+create or replace function bump_status_share(p_id text) returns void language sql security definer set search_path = public as $$
+  update status_cards set shares = shares + 1 where id = p_id and status = 'published'
+$$;
+grant execute on function bump_status_share(text) to anon, authenticated;
+
+-- Starter cards (original Chatimpu text + traditional Telugu proverbs, which are public domain).
+insert into status_cards (id, kind, lang, text, attribution, background, publish_on) values
+  ('seed-gm-1', 'good_morning', 'te', 'శుభోదయం! ఈ రోజు మీ ఊరిలో, మీ ఇంట్లో, మీ మనసులో వెలుగు నిండాలి.', null, 'dawn', current_date),
+  ('seed-gm-2', 'good_morning', 'te', 'కొత్త రోజు, కొత్త అవకాశం. చిరునవ్వుతో మొదలుపెట్టండి. శుభోదయం!', null, 'saffron', current_date),
+  ('seed-gn-1', 'good_night', 'te', 'ఈ రోజు చేసిన మంచి పనులే రేపటి ధైర్యం. శుభరాత్రి!', null, 'night', current_date),
+  ('seed-pv-1', 'proverb', 'te', 'కృషితో నాస్తి దుర్భిక్షం.', 'తెలుగు సామెత', 'green', current_date),
+  ('seed-pv-2', 'proverb', 'te', 'చెట్టు పేరు చెప్పి కాయలు అమ్ముకోవడం.', 'తెలుగు సామెత', 'navy', current_date),
+  ('seed-mo-3', 'motivation', 'te', 'అడుగు అడుగుకీ అనుభవం, అనుభవమే గురువు.', null, 'purple', current_date),
+  ('seed-pv-4', 'proverb', 'te', 'ఇంట గెలిచి రచ్చ గెలువు.', 'తెలుగు సామెత', 'red', current_date),
+  ('seed-mo-1', 'motivation', 'te', 'పెద్ద మార్పు ఒక్క రోజులో రాదు. ప్రతి రోజు చిన్న అడుగు వేయండి.', null, 'red', current_date),
+  ('seed-mo-2', 'motivation', 'te', 'మీ ఊరి సమస్యను మీరే మొదట గమనిస్తారు. దాన్ని లోకానికి చెప్పండి — చాటింపు చేయండి!', null, 'navy', current_date),
+  ('seed-dv-1', 'devotional', 'te', 'ఓం నమః శివాయ. అందరికీ ఆరోగ్యం, శాంతి, సంతోషం కలగాలి.', null, 'saffron', current_date),
+  ('seed-dv-2', 'devotional', 'te', 'సర్వే జనాః సుఖినో భవంతు — అందరూ సుఖంగా ఉండాలి.', 'శాంతి మంత్రం', 'dawn', current_date),
+  ('seed-qt-1', 'quote', 'te', 'మంచి వార్త చిన్నదైనా సరే, పదిమందికి చేరితే పెద్ద మార్పు తెస్తుంది.', 'చాటింపు', 'green', current_date),
+  ('seed-gm-en', 'good_morning', 'en', 'Good morning! May your day be as bright as your village sunrise.', null, 'dawn', current_date),
+  ('seed-mo-en', 'motivation', 'en', 'Small steps every day beat a big leap someday.', null, 'navy', current_date)
+on conflict (id) do nothing;

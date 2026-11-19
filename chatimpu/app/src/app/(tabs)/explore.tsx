@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
@@ -7,6 +7,9 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Icon, Tap, Txt } from '@/components/ui';
 import { Screen, Section } from '@/components/Screen';
 import { PollCard } from '@/components/PollCard';
+import { StatusCardView } from '@/components/StatusCardView';
+import { loadStatusCards } from '@/lib/status';
+import type { StatusCard } from '@/data/status';
 import { CATEGORIES } from '@/lib/categories';
 import { MAGAZINES, POLLS } from '@/data/catalog';
 import { STORIES } from '@/data/stories';
@@ -21,6 +24,8 @@ export default function Explore() {
   const tr = useT();
   const lang = usePrefs((s) => s.language);
   const buzz = useMemo(() => [...STORIES].sort((a, b) => b.shares - a.shares).slice(0, 5), []);
+  const [status, setStatus] = useState<StatusCard[]>([]);
+  useEffect(() => { loadStatusCards(lang).then((c) => setStatus(c.slice(0, 10))).catch(() => {}); }, [lang]);
 
   return (
     <Screen title={tr('tabExplore')} tabs>
@@ -43,6 +48,17 @@ export default function Explore() {
           </LinearGradient>
         </Tap>
       </Animated.View>
+
+      {status.length > 0 && (
+        <Section title={lang === 'te' ? 'ఈ రోజు వాట్సాప్ స్టేటస్' : "Today's WhatsApp Status"}>
+          <FlatList horizontal data={status} keyExtractor={(c) => c.id} showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}
+            renderItem={({ item }) => (
+              <Tap onPress={() => router.push('/status')} scaleTo={0.96} accessibilityLabel={item.text} style={{ borderRadius: radius.md, overflow: 'hidden' }}>
+                <StatusCardView card={item} width={108} />
+              </Tap>
+            )} />
+        </Section>
+      )}
 
       <Section title={tr('categories')}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, paddingHorizontal: 20 }}>
